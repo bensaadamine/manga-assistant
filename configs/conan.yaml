@@ -1,0 +1,33 @@
+# Per-artist override. Loaded on top of base.yaml.
+extends: base.yaml
+
+artist:
+  name: aoyama_gosho
+  series: detective_conan
+  trigger_word: aoymstyle        # the LoRA activation token
+
+character:
+  id: conan
+  reference: data/refs/conan_ref_clean.png
+  # No color words - they pull the model back toward color in a monochrome prompt.
+  description: >-
+    1boy, solo, child, short dark hair with a cowlick, round glasses,
+    buttoned blazer, bow tie, shorts, knee socks, sneakers
+  # Props present in the reference that the outline does not carry.
+  # IP-Adapter copies everything in the reference, so suppress them explicitly.
+  negative_props: "bag, briefcase, satchel, holding object"
+
+poses:
+  - {file: conan_pose1_standing.png, text: "full body, standing, arms at sides"}
+  - {file: conan_pose2_walking.png,  text: "full body, walking, from the side"}
+  - {file: conan_pose3_sitting.png,  text: "full body, sitting on a chair"}
+  - {file: conan_pose4_turned.png,   text: "full body, turned away, looking back over the shoulder"}
+  - {file: conan_pose5_talking.png,  text: "upper body, talking, one hand raised"}
+
+lora:
+  rank: 32
+  alpha: 16
+  learning_rate: 1.0e-4
+  max_train_steps: 1500
+  resolution: 512
+  batch_size: 1

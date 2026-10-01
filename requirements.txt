@@ -1,0 +1,19 @@
+torch>=2.1
+diffusers>=0.31
+transformers>=4.44
+accelerate>=0.33
+safetensors>=0.4
+peft>=0.12
+compel>=2.0
+controlnet-aux>=0.0.9
+pillow>=10.0
+numpy>=1.26
+pyyaml>=6.0
+tqdm>=4.66
+
+# evaluation
+clean-fid>=0.1.35
+scipy>=1.11
+
+# experiment tracking
+wandb>=0.17

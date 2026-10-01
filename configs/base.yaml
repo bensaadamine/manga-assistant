@@ -1,0 +1,40 @@
+# Values frozen at the end of the POC (27 Sep 2026).
+# They transferred unchanged across all three test characters - do not retune
+# casually, and log a W&B run whenever you do.
+
+model:
+  checkpoint: gsdf/Counterfeit-V2.5          # SD 1.5, anime, clean separable lines
+  controlnet: lllyasviel/control_v11p_sd15s2_lineart_anime
+  ip_adapter_repo: h94/IP-Adapter
+  ip_adapter_weight: ip-adapter-plus_sd15.safetensors
+  clip_skip: 2                               # read CLIP layer 11, not 12
+  dtype: float16
+
+generation:
+  cn_scale: 0.50        # outline strength
+  cn_start: 0.0
+  cn_end: 0.70          # ControlNet steers only the first 70% of steps
+  ip_scale: 0.80        # reference strength
+  steps: 28
+  cfg: 7.5
+  width: 512
+  height: 768
+  seed: 30
+
+prompts:
+  style: "(monochrome:1.6), (greyscale:1.6), (manga:1.4), (black and white:1.4), (screentone:1.2), clean lineart, ink drawing"
+  quality: "masterpiece, best quality"
+  background: "(plain white background:1.5), simple background"
+  negative: >-
+    (color:1.5), (colored:1.5), colorful, vibrant colors, sepia, skin tone,
+    (grey background:1.3), lowres, bad anatomy, bad hands, extra digits, cropped,
+    worst quality, low quality, blurry, watermark, signature, text, 2girls, background,
+    speed lines, action lines, emphasis lines, halftone burst, dark background,
+    construction lines, seam lines, blindfold, bandage over eyes
+
+paths:
+  refs: data/refs
+  outlines: data/outlines
+  results: outputs/results
+  datasets: data/datasets
+  loras: models/loras

@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+
+# data & weights are versioned with DVC, not git
+data/**
+!data/.gitkeep
+outputs/**
+!outputs/.gitkeep
+models/
+*.safetensors
+*.ckpt
+*.pt
+
+# experiment tracking
+wandb/
+mlruns/
+
+.DS_Store
+.env
