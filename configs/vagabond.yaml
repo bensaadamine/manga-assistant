@@ -1,0 +1,25 @@
+# Artist #3 - Takehiko Inoue, Vagabond. NOT YET RUN.
+#
+# The deliberately hard case: sumi-e brush, dense crosshatch, realistic adult
+# anatomy, tilted and page-bleeding panels, and English SFX redrawn over the
+# artwork. It is the furthest of the three series from Counterfeit-V2.5, which
+# is exactly why it is worth proving the method transfers to it. It replaces
+# RinToSiteSippuNoNaka in that slot.
+#
+# Expect the defaults to behave worse here than on Spy x Family:
+#   - tilted panels leave neighbour fragments inside an axis-aligned crop
+#   - SFX laid over the art will trip max_big on a large share of panels
+#   - vols 2-4 are 820x1200, so almost nothing clears min_side; use vol 1 only
+# Tune against contact sheets before trusting any number out of this file.
+extends: dataset.yaml
+
+series:
+  name: vagabond
+  trigger: inostyle
+  volumes:
+    - id: v1
+      pdf: ../ENG/Vagabond Volume 1 (Eng).pdf     # 1263x2000, the only usable one
+
+paths:
+  pages: data/pages/vagabond
+  dataset: data/datasets/vagabond

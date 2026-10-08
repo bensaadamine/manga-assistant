@@ -1,0 +1,45 @@
+# Panel-extraction defaults for the per-artist LoRA datasets.
+#
+# Measured on Spy x Family vols 1-2 (Oct 2026): 332 content pages ->
+# 2848 panel candidates -> 336 kept -> 319 after text removal.
+# Raise min_side or lower max_text to trade count for cleanliness; the
+# sensitivity table is in claude/DATASET.md.
+extends: base.yaml
+
+dataset:
+  # --- stage 0: pages out of the PDFs -------------------------------------
+  pages:
+    head_drop: 4          # cover, colour plates, title page
+    tail_drop: 6          # afterword, ads, back cover
+
+  # --- stage 1: page -> panel boxes ---------------------------------------
+  panels:
+    gutter_frac: 0.004    # a wide gutter, as a fraction of page height
+    max_ink_frac: 0.02    # ...may carry this much ink and still count
+    thin_frac: 0.0012     # a thin gutter (manga gutters are only a few px)
+    thin_ink_frac: 0.004  # ...must be almost perfectly white
+    line_ink_frac: 0.90   # a drawn panel border: a row/col this inky
+    min_part_ink: 0.03    # refuse a cut that carves off a near-empty strip
+    min_side_frac: 0.07   # stop recursing below this fraction of page height
+
+  # --- stage 2: what survives ---------------------------------------------
+  filters:
+    min_side: 448         # native px; everything kept is DOWNscaled to 512
+    aspect: [0.35, 3.0]
+    ink: [0.02, 0.70]     # blank page / solid black fill
+    max_text: 0.30        # fraction of the panel under lettering
+    max_big: 0.02         # oversized type: chapter logos and drawn SFX
+
+  # --- stage 3: lettering removal -----------------------------------------
+  clean:
+    pad_frac: 0.012       # collar inspected around each lettering block
+    ring_light: 0.80      # collar this pale -> erase the whole block
+    min_ground: 0.45      # below this the type is on artwork -> drop the panel
+
+  # --- stage 4: what kohya gets -------------------------------------------
+  emit:
+    min_side: 512
+    max_side: 1024        # centre-crop the long axis past this
+    repeats: 10           # kohya's "<repeats>_<trigger>" folder convention
+    holdout: 80           # panels withheld from training, for FID
+    base_tags: [monochrome, greyscale, comic, manga style, screentone]

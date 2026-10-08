@@ -1,0 +1,37 @@
+# Artist #1 - Tatsuya Endo, Spy x Family.
+#
+# Chosen because it is the closest of the candidate series to Counterfeit-V2.5:
+# thin uniform digital line, flat screentone, anime-standard faces, rectangular
+# panel grids, and a lot of full-body framing. Two volumes, legally bought.
+extends: dataset.yaml
+
+series:
+  name: spyxfamily
+  trigger: sxfstyle
+  # Vol 2 is 2415x3440, vol 1 is 1080x1688. Both are kept: the min_side filter
+  # only passes panels that will be DOWNscaled to 512, so the two sources reach
+  # the trainer at comparable sharpness instead of averaging to a soft line.
+  # paths are relative to the repo root; the PDFs live beside it in dev/ENG
+  volumes:
+    - id: v2
+      pdf: ../ENG/spy x  family 2.pdf
+    - id: v1
+      pdf: ../ENG/spy x family.pdf
+
+paths:
+  pages: data/pages/spyxfamily
+  dataset: data/datasets/spyxfamily
+
+lora:
+  rank: 32              # LoRA width. 32 is the usual floor for a style
+  alpha: 16             # alpha/rank = 0.5 scaling
+  learning_rate: 1.0e-4
+  text_encoder_lr: 5.0e-5   # half the UNet's: the text side overfits faster
+  lr_scheduler: cosine_with_restarts
+  warmup_steps: 100
+  max_train_steps: 1500 # ~5.5 epochs over 270 images at batch 1
+  batch_size: 1         # 8 GB VRAM; raise to 2 on a P100/T4 if it fits
+  resolution: 512
+  max_bucket_reso: 1024 # matches the dataset's long-side cap
+  optimizer: AdamW8bit
+  attention: sdpa       # RTX 50 is sm_120: no xformers wheels exist
