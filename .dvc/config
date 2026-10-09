@@ -1,4 +1,4 @@
 [core]
-    remote = drive
-['remote "drive"']
-    url = gdrive://1WUmHVlhoaZKTjDLiygLoi4xUkSPf5GgL
+    remote = store
+['remote "store"']
+    url = C:/Users/bensa/dvcstore
