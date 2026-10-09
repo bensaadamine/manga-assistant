@@ -5,12 +5,18 @@ venv/
 *.egg-info/
 .ipynb_checkpoints/
 
-# data & weights are versioned with DVC, not git
+# data & weights are versioned with DVC, not git.
+# The tiny .dvc pointer files DO belong in git, so the directories have to stay
+# walkable (!**/ ) or git never descends far enough to see them.
 data/**
+!data/**/
 !data/.gitkeep
 outputs/**
+!outputs/**/
 !outputs/.gitkeep
-models/
+models/**
+!models/**/
+!**/*.dvc
 *.safetensors
 *.ckpt
 *.pt

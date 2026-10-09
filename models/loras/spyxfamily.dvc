@@ -1,0 +1,6 @@
+outs:
+- md5: 26602e123e3eec39959f6c3fc3a065d7.dir
+  size: 37874080
+  nfiles: 1
+  hash: md5
+  path: spyxfamily
