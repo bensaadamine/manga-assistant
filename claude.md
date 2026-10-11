@@ -55,8 +55,10 @@ transferred to characters 2 and 3 untouched.**
 ```python
 CN_SCALE = 0.50   # outline strength
 CN_END   = 0.70   # ControlNet steers only the first 70% of denoising steps
-IP_SCALE = 0.80   # reference strength
+IP_SCALE = 0.60   # reference strength (was 0.80 until 11 Oct, see finding 17)
 ```
+
+CN and CN_END tuned once on character 1 in the POC. IP_SCALE retuned 11 Oct on hard poses.
 
 ## Findings — do not rediscover these
 
@@ -89,6 +91,14 @@ IP_SCALE = 0.80   # reference strength
 15. A "naked" negative prompt is NOT needed — bare torsos came from nude test mannequins.
 16. **Never `.resize()` an input image.** A landscape outline squashed into 512×768 makes
     every output elongated. Everything goes through `sketches.fit_to()`.
+17. **IP 0.8 forces the reference's pose.** References are standing front views, so seated
+    or flexing outlines came out half-standing. IP 0.6 fixes it and keeps identity; 0.4 and
+    below lose the headband. Raising CN to 0.9+ also fixes pose but breaks identity (Loid's
+    hair turns black). POC poses were easy, which is why 0.8 looked fine then.
+18. **kohya counts steps in images x folder repeats.** `10_` x 270 = 2700 images per epoch,
+    so 1500 steps was 0.55 epoch: LoRAs v1 and v2 were undertrained and looked identical.
+19. **Later epochs erase pose detail** (flexing arms fade from epoch 6). Pick an early-middle
+    checkpoint, not the last one.
 
 ## Open limitations
 
@@ -111,9 +121,15 @@ anime-standard faces, rectangular panels, lots of full-body framing.
 
 ```
 355 pages → 2864 panel candidates → 363 kept → 347 after lettering removal
-data/datasets/spyxfamily/10_sxfstyle/   270 images + WD14 captions  (train_data_dir is the parent)
-data/datasets/spyxfamily_holdout/        77 images                  (FID, never trained on)
+data/datasets/spyxfamily/10_sxfstyle/    270 panels (dataset v1)
+data/datasets/spyxfamily_v2/2_sxfstyle/  same 270 panels           (train_data_dir = spyxfamily_v2)
+data/datasets/spyxfamily_v2/1_sxfstyle/  647 Magi character crops  (dataset v2)
+data/datasets/spyxfamily_holdout/         77 images                 (FID, never trained on)
 ```
+
+Crops: Magi on Kaggle → `data/datasets/magi_v3.json` (355 pages, boxes only), then
+`scripts/crops_from_magi.py` rebuilds crops on CPU in ~2 min (letter-only text erase,
+crops >10% text dropped), WD14 tags, then `no humans` / `close-up` / `eye focus` removed.
 
 Pipeline: `python scripts/build_dataset.py --config spyxfamily.yaml` then
 `python scripts/tag_dataset.py data/datasets/spyxfamily/10_sxfstyle sxfstyle`.
@@ -123,21 +139,28 @@ CPU only, ~90 s. Full write-up, thresholds and known defects in **`claude/DATASE
 `english text` is in those captions, so the model attributes text to that tag rather than to
 `sxfstyle`. If the LoRA scrawls pseudo-text, tighten `max_text`, don't change the prompt.
 
-## LoRA #1 — trained
+## LoRAs
 
-`models/loras/spyxfamily/spyxfamily_style.safetensors` — rank 32, alpha 16, lr 1e-4,
-1500 steps, ~20 min on a Kaggle P100. Config and flags in **`claude/TRAINING.md`**.
-Runner: `notebooks/01_train_lora_kaggle.ipynb`.
+| | Data | Settings | Result |
+|---|---|---|---|
+| v1 `spyxfamily_style` | 270 panels | alpha 16, 1500 steps (0.55 epoch) | barely moves style |
+| v2 `spyxfamily_style_v2` | + crops | same (0.25 epoch) | identical to v1 |
+| **v3 `spyxfamily_style_v3`** | v2 data, repeats 2/1 | **alpha 32, epoch 4 of 10** | **white bg, flat ink, poses held** |
+
+Per-epoch checkpoints in `models/loras/spyxfamily/spyxfamily_style-0000NN.safetensors`.
+Config and flags in **`claude/TRAINING.md`**. Runner: `notebooks/01_train_lora_kaggle.ipynb`.
 
 ## Current state
 
-- B3 (no LoRA) generated for Yor and Loid. Yor passes; Loid's outline is a back view
-  against a front-view reference and produces two heads — input problem, see finding 11.
-- **B4 has not been run yet.** That is the next action.
+- B3 vs B4 (LoRA v3, IP 0.6) run on all 9 eval poses (11 Oct): every pose followed,
+  manga ink style visible. Remaining: Loid's hair drifts dark (head is the artist's job),
+  Anya's backgrounds grey.
+- **Next: the numbers** — FID vs the 77 holdout panels + DINOv2 identity, B3 vs B4,
+  via `scripts/evaluate.py`.
 
 ```
-python scripts/run_poses.py --config spyxfamily_eval.yaml --baseline b4 \
-    --lora models/loras/spyxfamily/spyxfamily_style.safetensors
+python scripts/compare_loras.py --config spyxfamily_eval.yaml --poses <files> \
+    --loras none models/loras/spyxfamily/spyxfamily_style_v3.safetensors
 ```
 
 ## Phase 2 plan

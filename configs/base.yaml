@@ -14,7 +14,7 @@ generation:
   cn_scale: 0.50        # outline strength
   cn_start: 0.0
   cn_end: 0.70          # ControlNet steers only the first 70% of steps
-  ip_scale: 0.80        # reference strength
+  ip_scale: 0.60        # reference strength. Was 0.80: forced the reference's standing pose on seated/flexing outlines (11 Oct sweep)
   steps: 28
   cfg: 7.5
   width: 512
@@ -22,7 +22,7 @@ generation:
   seed: 30
 
 prompts:
-  style: "(monochrome:1.6), (greyscale:1.6), (manga:1.4), (black and white:1.4), (screentone:1.2), clean lineart, ink drawing"
+  style: "(monochrome:2), (greyscale:1.6), (manga:1.4), (black and white:1.4), (screentone:1.2), clean lineart, ink drawing"
   quality: "masterpiece, best quality"
   background: "(plain white background:1.5), simple background"
   negative: >-

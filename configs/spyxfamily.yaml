@@ -20,16 +20,16 @@ series:
 
 paths:
   pages: data/pages/spyxfamily
-  dataset: data/datasets/spyxfamily
+  dataset: data/datasets/spyxfamily_v2   # 270 panels (2_) + 647 Magi crops (1_)
 
 lora:
   rank: 32              # LoRA width. 32 is the usual floor for a style
-  alpha: 16             # alpha/rank = 0.5 scaling
+  alpha: 32             # alpha/rank = 1. Was 16: LoRA too weak
   learning_rate: 1.0e-4
   text_encoder_lr: 5.0e-5   # half the UNet's: the text side overfits faster
   lr_scheduler: cosine_with_restarts
   warmup_steps: 100
-  max_train_steps: 1500 # ~5.5 epochs over 270 images at batch 1
+  max_train_steps: 6000 # steps count images x REPEATS: 1 epoch = 270x2 + 647x1 = 1187 images. LoRA v3 = epoch 4 checkpoint
   batch_size: 1         # 8 GB VRAM; raise to 2 on a P100/T4 if it fits
   resolution: 512
   max_bucket_reso: 1024 # matches the dataset's long-side cap
