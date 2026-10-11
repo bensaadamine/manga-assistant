@@ -1,0 +1,102 @@
+# Eval cases for the Spy x Family style LoRA.
+# Prompt is IDENTICAL for b3 and b4 - only the LoRA differs - so the comparison
+# isolates the LoRA. 'sxfstyle' is inert without it.
+# Descriptions live once per character; a pose only names which character it is.
+extends: base.yaml
+
+artist:
+  name: tatsuya_endo
+  series: spyxfamily
+  trigger_word: sxfstyle
+
+characters:
+  yor:
+    reference: data/refs/yor_ref3.png
+    description: >-
+      sxfstyle, 1girl, solo, very long straight black hair, wide headband,
+      white long-sleeved blouse, buttoned vest, high-waisted pencil skirt,
+      black pantyhose, black high heels
+    negative_props: "bag, handbag, holding object, weapon, chair"
+
+  loid:
+    reference: data/refs/loid_ref4.png
+    description: >-
+      sxfstyle, 1boy, solo, short swept-back hair, three-piece suit,
+      waistcoat, necktie, lapel pin, black dress shoes
+    negative_props: "bag, briefcase, holding object, weapon"
+
+  anya:
+    reference: data/refs/aina_ref4.png
+    description: >-
+      sxfstyle, 1girl, child, solo, short bob hair, horn-shaped hair ornaments,
+      dark long-sleeved dress, white collar, white ribbon bow, white socks,
+      black mary janes
+    negative_props: "bag, holding object, weapon"
+
+# Fallback for scripts that still read cfg.character (sweep.py).
+character:
+  id: spyxfamily
+  reference: data/refs/yor_ref3.png
+  description: >-
+    sxfstyle, 1girl, solo, very long straight black hair, wide headband,
+    white long-sleeved blouse, buttoned vest, high-waisted pencil skirt
+  negative_props: "bag, handbag, holding object, weapon, chair"
+
+poses:
+  # ---------- YOR ----------
+  - file: yor_pose3.png
+    character: yor
+    text: "walking toward the viewer, arms relaxed at the sides, full body"
+
+  - file: yor_seated.png
+    character: yor
+    text: "seated on a stool, legs crossed, one hand resting on the knee, full body"
+
+  - file: yor_waving.png
+    character: yor
+    text: "waving at the viewer, arms raised ,cropped at mid-thigh"
+
+  # ---------- LOID ----------
+  - file: loid_running.png
+    character: loid
+    text: "running toward the viewer mid-stride, arms at the sides, full body"
+
+  - file: loid_thumbs_up.png
+    character: loid
+    text: "three-quarter front, one hand raised to the collar level with a thumbs up gesture, cropped at mid-thigh"
+
+  - file: loid_flexing.png
+    character: loid
+    text: "standing facing front, arms relaxed at the sides, full body"
+
+  # ---------- ANYA ----------
+  - file: aina_pose1.png
+    character: anya
+    text: "standing facing front, feet together, arms at the sides, full body"
+
+  - file: aina_pose2.png
+    character: anya
+    text: "running toward the viewer, one leg lifted mid-stride, full body"
+
+  - file: aina_pose3.png
+    character: anya
+    text: "three-quarter front, both hands raised open at chest height, cowboy shot"
+
+# ---------------------------------------------------------------------------
+# Prompt override, scoped to this eval so base.yaml stays frozen.
+# config._deep_merge replaces only these three keys.
+#
+# Why: base.yaml's negative carries a bare `background` token, which cancels
+# every background concept including the positive `plain white background`.
+# The two neutralise and the model fills the field with flat grey. Confirmed
+# 10 Oct by a lora_scale sweep: grey identical at 0.4 and 1.0, so not the LoRA.
+prompts:
+  style: "(monochrome:1.3), (greyscale:1.3), (manga:1.4), (black and white:1.4), (screentone:1.2), clean lineart, ink drawing, high contrast"
+  background: "(white background:1.6), simple background, no shading behind the figure"
+  negative: >-
+    (color:1.5), (colored:1.5), colorful, vibrant colors, sepia, skin tone,
+    (grey background:1.6), (gradient background:1.4), grey backdrop, flat grey fill,
+    washed out, low contrast, lowres, bad anatomy, bad hands, extra digits,
+    worst quality, low quality, blurry, watermark, signature, text, 2girls,
+    speed lines, action lines, emphasis lines, halftone burst, dark background,
+    construction lines, seam lines, blindfold, bandage over eyes
