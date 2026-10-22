@@ -43,3 +43,13 @@ dataset:
     repeats: 10           # kohya's "<repeats>_<trigger>" folder convention
     holdout: 80           # panels withheld from training, for FID
     base_tags: [monochrome, greyscale, comic, manga style, screentone]
+
+  # --- character crops (Magi path) ----------------------------------------
+  # Replaces the panel path when the panels are too crowded to use whole.
+  # Magi gives a box per character; we cut one training image from each.
+  characters:
+    min_side: 448         # native px on the short side; below this a crop is
+                          # upscaled into blur, and the LoRA learns the blur
+    pad_frac: 0.08        # air added around Magi's box, as a fraction of it
+    text_cover: 0.25      # a text box this covered by the crop gets whitened
+    ink: [0.02, 0.70]     # outside this the "character" is a detection error

@@ -100,6 +100,27 @@ def load(cfg: Config, device: str = "cuda") -> Models:
 
 
 def load_lora(models: Models, path: str, scale: float = 1.0) -> None:
-    """Attach a per-artist style LoRA to the shared UNet."""
-    models.pipe.load_lora_weights(path)
-    models.pipe.fuse_lora(lora_scale=scale)
+    """Attach a per-artist style LoRA to the shared UNet and text encoder.
+
+    cn_pipe shares unet and text_encoder with pipe, so injecting here reaches both.
+    We do NOT fuse: an active PEFT adapter applies its scale inside the layer's
+    forward pass, which survives being called through a different pipeline object.
+    """
+    models.pipe.load_lora_weights(path, adapter_name="style")
+    models.pipe.set_adapters(["style"], adapter_weights=[scale])
+
+    n_unet = sum(1 for n, _ in models.pipe.unet.named_modules() if "lora_A" in n)
+    n_te = sum(1 for n, _ in models.pipe.text_encoder.named_modules() if "lora_A" in n)
+    if n_unet == 0:
+        raise RuntimeError(f"aucune couche LoRA injectee dans l'UNet depuis {path}")
+    print(f"LoRA ok : unet={n_unet} modules, text_encoder={n_te} modules, scale={scale}")
+
+
+def set_lora_scale(models: Models, scale: float) -> None:
+    """Change the active LoRA's strength without reloading it.
+
+    Only possible because load_lora leaves the adapter unfused: the scale lives in
+    the PEFT layer and is read on every forward pass. A fused LoRA would need a
+    full reload per value, which is what makes a lora_scale sweep cheap here.
+    """
+    models.pipe.set_adapters(["style"], adapter_weights=[scale])
