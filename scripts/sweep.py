@@ -39,7 +39,10 @@ def main() -> None:
     cfg = load(args.config)
     models = pipeline.load(cfg)
     if args.lora:
-        pipeline.load_lora(models, args.lora, scale=args.values[0])
+        # BUG fixed 22 Oct: values[0] was used as the LoRA scale for EVERY param,
+        # so an ip_scale sweep starting at 0.4 also ran the LoRA at 0.4.
+        first = args.values[0] if args.param == "lora_scale" else 1.0
+        pipeline.load_lora(models, args.lora, scale=first)
 
     pose = cfg.poses[args.pose]
     char = cfg.characters[pose["character"]] if "character" in pose else cfg.character

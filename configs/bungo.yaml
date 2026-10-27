@@ -1,0 +1,27 @@
+# Artist #2 - Harukawa Sango, Bungo Stray Dogs. Chapters 1-60, ~1000x1400 scans.
+#
+# Between Spy x Family and Counterfeit: thin clean line, anime-standard faces,
+# more tone than Endo, mostly male cast, many calm standing shots.
+# One "volume" per 10-chapter folder. Folders, not PDFs: `images:` is copied in
+# natural order (c020.5 between c020 and c021).
+extends: dataset.yaml
+
+series:
+  name: bungo
+  trigger: bsdstyle
+  volumes:
+    - {id: v1, images: "../ENG/bungou-stray-dogs_c001 _ c010"}
+    - {id: v2, images: "../ENG/bungou-stray-dogs_c011 _ c020.5"}
+    - {id: v3, images: "../ENG/bungou-stray-dogs_c021 _ c030"}
+    - {id: v4, images: "../ENG/bungou-stray-dogs_c031 _ c040"}
+    - {id: v5, images: "../ENG/bungou-stray-dogs_c041 _ c050-p6"}
+    - {id: v6, images: "../ENG/bungou-stray-dogs_c051 _ c060"}
+
+dataset:
+  pages:
+    head_drop: 0          # chapter folders carry no cover or ads to skip
+    tail_drop: 0
+
+paths:
+  pages: data/pages/bungo
+  dataset: data/datasets/bungo

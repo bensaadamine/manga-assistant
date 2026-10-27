@@ -24,8 +24,8 @@ Not a universal model — a **reproducible method for adapting the system to one
 The outline supplies head shape, size and orientation so the drawing lands correctly.
 
 **Machine:** ASUS TUF F16, i7-14650HX, RTX 5060 Laptop 8 GB, 24 GB RAM.
-**Reference environment: Kaggle.** The laptop is side research — Windows Smart App
-Control blocks the torch import chain kohya needs. Details in `claude/DATASET.md`.
+**Environment: local first (27 Oct).** Smart App Control disabled, so torch and kohya now run on
+the laptop. Kaggle is the fallback when 8 GB VRAM is not enough.
 
 ---
 
@@ -131,9 +131,9 @@ Crops: Magi on Kaggle → `data/datasets/magi_v3.json` (355 pages, boxes only), 
 `scripts/crops_from_magi.py` rebuilds crops on CPU in ~2 min (letter-only text erase,
 crops >10% text dropped), WD14 tags, then `no humans` / `close-up` / `eye focus` removed.
 
-Pipeline: `python scripts/build_dataset.py --config spyxfamily.yaml` then
-`python scripts/tag_dataset.py data/datasets/spyxfamily/10_sxfstyle sxfstyle`.
-CPU only, ~90 s. Full write-up, thresholds and known defects in **`claude/DATASET.md`**.
+Pipeline (26 Oct): **one command** — `python scripts/prepare_series.py --config <series>.yaml`,
+on Kaggle via `notebooks/02_prepare_series_kaggle.ipynb` (Magi needs a GPU). Volumes in,
+`2_<trigger>/` panels + `1_<trigger>_crops/` + `_holdout/` + `_report.json` out. Full write-up, thresholds and known defects in **`claude/DATASET.md`**.
 
 **Known data defect:** 45% of training panels still carry readable lettering. The WD14 tag
 `english text` is in those captions, so the model attributes text to that tag rather than to
@@ -155,8 +155,11 @@ Config and flags in **`claude/TRAINING.md`**. Runner: `notebooks/01_train_lora_k
 - B3 vs B4 (LoRA v3, IP 0.6) run on all 9 eval poses (11 Oct): every pose followed,
   manga ink style visible. Remaining: Loid's hair drifts dark (head is the artist's job),
   Anya's backgrounds grey.
-- **Next: the numbers** — FID vs the 77 holdout panels + DINOv2 identity, B3 vs B4,
-  via `scripts/evaluate.py`.
+- **Measured 22 Oct (Kaggle, n=6):** B3 → B4 v3 — style_gap 1.356 → **1.149**, identity
+  0.774 → 0.785, white_ratio 0.001 → 0.212 (Endo 0.672), FID 283 → 266. **LoRA helps; V2 passes.**
+  **Visually still bad:** better than B3, not good — still grey and soft, not flat ink. Don't oversell.
+  Detail in `V2_RESULTS.md` §7. Evaluation runs on Kaggle (Smart App Control blocks torch locally).
+- **Next:** close the white gap (0.21 vs 0.67), then artists 2 and 3.
 
 ```
 python scripts/compare_loras.py --config spyxfamily_eval.yaml --poses <files> \
@@ -169,8 +172,8 @@ python scripts/compare_loras.py --config spyxfamily_eval.yaml --poses <files> \
 A. Data card                 done
 B. Filtering + build_dataset done
 C. LoRA #1                   done
-D. B3 vs B4 on the eval cases   ← current, headline figure of the report
-E. Artists 2 and 3
+D. B3 vs B4 on the eval cases   done 22 Oct — style_gap 1.36 → 1.15
+E. Artists 2 and 3             ← current
 F. Head inpainting            ← last step, by decision
 ```
 

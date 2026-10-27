@@ -206,3 +206,38 @@ cut heads and feet), downscale so the long side <= 1024, drop the crop if text b
    tight box is as tall as its letters.
 4. **Save the JSON.** Re-cropping from it is a 2-minute CPU job; re-running Magi is a GPU
    session.
+
+---
+
+## Update 26 Oct — one command per series
+
+```
+python scripts/prepare_series.py --config bungo.yaml            # Kaggle: notebooks/02
+python scripts/prepare_series.py --config bungo.yaml --limit 20 --until panels   # smoke test, CPU
+```
+
+pages (PDF **or** chapter folders, natural order) → panels → Magi (GPU) → crops → WD14 tags →
+drop `no humans` / `close-up` / `eye focus` → `data/datasets/<series>_report.json` (counts per
+stage, git commit, resolved config). Each stage is skipped when its output exists; `--from STAGE`
+redoes it and everything after. Magi writes `magi.json` every 25 pages, so a dead Kaggle session
+resumes. All thresholds live in `configs/dataset.yaml` (`crops:`, `tag:`), none in scripts.
+
+Output for a series:
+
+```
+data/datasets/<series>/2_<trigger>/          panels       (repeats 2)
+data/datasets/<series>/1_<trigger>_crops/    Magi crops   (repeats 1)
+data/datasets/<series>_holdout/              panels for FID, never trained on
+```
+
+**Regression check** on Spy × Family's `magi_v3.json`: 708 crops, containing all 647 of dataset v2,
+40/40 sampled pixel-identical. The 891 in `sxf_crops/` predate the `max_text` rule.
+
+Retired (in `_to_delete/scripts/`): `magi_crops.py` (Kaggle cell, box-whitening — the rule that
+holed 258 faces), `crops_from_magi.py` (ported into `dataset/crops.py`), `build_characters.py` +
+`dataset/characters.py` (box-whitening again, never used), `tag_dataset.sh`.
+
+**Bungo smoke test (120 pages):** 738 candidates → 62 panels (45 train / 17 holdout). Extrapolates
+to ~1400 panels from 2680 pages. Panels on this series carry visible English lettering and some
+under-splitting; the Magi crops are expected to be the cleaner half.
+

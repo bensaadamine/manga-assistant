@@ -149,3 +149,26 @@ scale is read inside the layer's forward pass, and that survives being called th
 `cn_pipe` — a different pipeline object sharing the same UNet. It also makes a `lora_scale`
 sweep cheap, since no reload is needed per value. A hard assertion on injected module count
 now fails loudly instead of silently.
+
+---
+
+## 7. LoRA v3 measured — 22 October (Kaggle, n=6, 9 cases, 54 images per side)
+
+| | identity ↑ | style_gap ↓ | midtone | white | FID ↓ |
+|---|---|---|---|---|---|
+| B3 | 0.774 | 1.356 | 0.477 | 0.001 | 283.0 |
+| **B4 — LoRA v3 (epoch 4), scale 1.0** | **0.785** | **1.149** | **0.367** | **0.212** | **265.6** |
+| Endo, held-out | — | 0 | 0.120 | 0.672 | — |
+
+**V2 passes.** style_gap 1.149 < 1.25, so §3's decision rule says the LoRA helps. B4 beats B3
+on every metric. v1 → v3 took B4 from 1.73 (worse than B3) to 1.15 (better), which confirms
+undertraining was the cause. A repeated B4 run gave identical numbers (fixed seed).
+
+Remaining gap: white_ratio 0.21 against 0.67. FID is meaningful only as B3 vs B4, not in
+absolute terms, at 54 images per side.
+
+**But visually the result is still bad.** The metrics measure *relative* progress over B3, not
+quality: B4 is less wrong than B3, not right. The outputs still read as grey, soft renders
+rather than Endo's flat ink on white paper (white 0.21 vs 0.67 says the same thing in numbers).
+The headline is "the LoRA moves the system in the right direction", **not** "the style is
+solved". Report both the table and the image grids side by side, so the claim is not overstated.

@@ -2,7 +2,7 @@
 
 Four stages, each resumable on its own:
 
-    extract_pages   PDF            -> data/pages/<series>/<vol>/p-*.jpg
+    extract_pages   PDF or folder  -> data/pages/<series>/<vol>/p-*.jpg
     scan            pages          -> panels.json  (every candidate, with scores)
     emit            panels.json    -> data/datasets/<series>/<repeats>_<trigger>/
 
@@ -15,6 +15,7 @@ import json
 import os
 import random
 import shutil
+import re
 from glob import glob
 from pathlib import Path
 
@@ -59,23 +60,59 @@ def _pages_from_pdf(pdf: Path, out_dir: Path, dpi=300):
 
 
 PAGE_GLOB = "p-[0-9]*.*"
+IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp")
 
 
-def extract_pages(cfg, root="."):
-    """One image per page, straight out of the PDF with no re-rendering."""
+def _natural(p: Path):
+    """Sort key that reads numbers as numbers: c2 < c10, c020 < c020.5 < c021."""
+    return [float(t) if re.fullmatch(r"\d+(?:\.\d+)?", t) else t.lower()
+            for t in re.split(r"(\d+(?:\.\d+)?)", p.as_posix()) if t]
+
+
+def _pages_from_images(src: Path, out_dir: Path, limit=None):
+    """Copy a folder of page images (chapters in subfolders allowed), in reading order.
+
+    Chapter folders are walked in natural order, so a scanlation's c020.5 lands
+    between c020 and c021. Bytes are copied untouched, like the PDF path.
+    """
+    files = sorted((p for p in src.rglob("*") if p.suffix.lower() in IMAGE_EXTS),
+                   key=lambda p: _natural(p.relative_to(src)))
+    if not files:
+        raise FileNotFoundError(f"no page images under {src}")
+    for i, f in enumerate(files[:limit]):
+        shutil.copy2(f, out_dir / f"p-{i:04d}{f.suffix.lower()}")
+
+
+def _source(vol, root, src_root):
+    """Where a volume lives. `src_root` (e.g. /kaggle/input/eng) overrides the
+    config's relative path and keeps only its last component."""
+    rel = vol.get("pdf") or vol.get("images")
+    if not rel:
+        raise KeyError(f"volume {vol['id']}: needs `pdf:` or `images:`")
+    return Path(src_root) / Path(rel).name if src_root else Path(root) / rel
+
+
+def extract_pages(cfg, root=".", src_root=None, limit=None):
+    """One image per page, straight out of the PDF or folder with no re-rendering.
+
+    `limit` keeps only the first N pages per volume: a smoke test, not a dataset.
+    """
     out_root = Path(root) / cfg.paths.pages
     made = {}
     for vol in cfg.series.volumes:
         d = out_root / vol["id"]
         d.mkdir(parents=True, exist_ok=True)
         if not list(d.glob(PAGE_GLOB)):
-            pdf = Path(root) / vol["pdf"]
-            if not pdf.exists():
+            src = _source(vol, root, src_root)
+            if not src.exists():
                 raise FileNotFoundError(
-                    f"{pdf} not found — `pdf:` in the series config is relative "
-                    f"to the repo root ({Path(root).resolve()})")
-            _pages_from_pdf(pdf, d)
-        made[vol["id"]] = sorted(str(p) for p in d.glob(PAGE_GLOB))
+                    f"{src} not found — volume paths in the series config are relative "
+                    f"to the repo root ({Path(root).resolve()}); pass --src to override")
+            if src.is_dir():
+                _pages_from_images(src, d, limit)
+            else:
+                _pages_from_pdf(src, d)
+        made[vol["id"]] = sorted(str(p) for p in d.glob(PAGE_GLOB))[:limit]
     return made
 
 

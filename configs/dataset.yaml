@@ -40,16 +40,26 @@ dataset:
   emit:
     min_side: 512
     max_side: 1024        # centre-crop the long axis past this
-    repeats: 10           # kohya's "<repeats>_<trigger>" folder convention
+    repeats: 2            # kohya's "<repeats>_<trigger>" folder. Was 10: see TRAINING.md, finding 18
     holdout: 80           # panels withheld from training, for FID
     base_tags: [monochrome, greyscale, comic, manga style, screentone]
 
-  # --- character crops (Magi path) ----------------------------------------
-  # Replaces the panel path when the panels are too crowded to use whole.
-  # Magi gives a box per character; we cut one training image from each.
-  characters:
-    min_side: 448         # native px on the short side; below this a crop is
-                          # upscaled into blur, and the LoRA learns the blur
-    pad_frac: 0.08        # air added around Magi's box, as a fraction of it
-    text_cover: 0.25      # a text box this covered by the crop gets whitened
-    ink: [0.02, 0.70]     # outside this the "character" is a detection error
+  # --- stage 5: character crops (Magi boxes) ----------------------------
+  # Values that built dataset v2 (891 crops -> 647 after the tag filter).
+  crops:
+    repeats: 1            # panels are weighted 2x: 1 epoch = 2 x panels + crops
+    min_px: 256           # short side of Magi's character box
+    margin: 0.05          # air around the box, no square pad
+    overlap: 0.15         # max share of the box another character covers
+    aspect: [0.5, 2.0]    # kills eye-slits and tall strips
+    max_text: 0.10        # max share of the crop under Magi text boxes
+    max_side: 1024        # = max_bucket_reso, downscale only
+    ink: 200              # darker than this = ink, for lettering erase
+    pad_px: 4             # slack around tight text boxes
+    max_glyph: 0.08       # a letter is never taller than 8% of the page
+
+  # --- stage 6: WD14 captions, then drop what teaches nothing -------------
+  tag:
+    threshold: 0.35
+    character_threshold: 0.85
+    drop_tags: [no humans, close-up, eye focus]   # backgrounds, an eye, a mouth

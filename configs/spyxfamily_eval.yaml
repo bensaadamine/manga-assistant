@@ -67,7 +67,7 @@ poses:
 
   - file: loid_flexing.png
     character: loid
-    text: "standing facing front, arms relaxed at the sides, full body"
+    text: "standing facing front, both arms raised and flexing biceps, full body"
 
   # ---------- ANYA ----------
   - file: aina_pose1.png
