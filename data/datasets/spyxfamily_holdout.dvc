@@ -1,0 +1,6 @@
+outs:
+- md5: 74269dbd4deb22758324506ad2f537ff.dir
+  size: 11323829
+  nfiles: 154
+  hash: md5
+  path: spyxfamily_holdout
