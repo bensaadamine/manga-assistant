@@ -73,7 +73,8 @@ def build_command(cfg, data_dir: Path, scripts_dir: Path, out_dir: Path,
         "--bucket_no_upscale",
         "--clip_skip", str(cfg.model.clip_skip),
         "--seed", str(cfg.generation.seed),
-        "--save_every_n_epochs", "1",
+        *(["--save_every_n_steps", str(lora["save_every_steps"])] if lora.get("save_every_steps")
+          else ["--save_every_n_epochs", "1"]),
         "--max_data_loader_n_workers", "2",
         "--logging_dir", str(out_dir / "logs"),
     ]

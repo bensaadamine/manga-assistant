@@ -1,0 +1,6 @@
+outs:
+- md5: 16b1022e4fa1052e292fda95a55dfc18.dir
+  size: 12629883
+  nfiles: 146
+  hash: md5
+  path: bungo_holdout

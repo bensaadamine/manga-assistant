@@ -57,6 +57,9 @@ dataset:
     ink: 200              # darker than this = ink, for lettering erase
     pad_px: 4             # slack around tight text boxes
     max_glyph: 0.08       # a letter is never taller than 8% of the page
+    erase_bubbles: true   # whiten the bubble around each text box (26 Oct; v2 had it off)
+    bubble_grow: 2.1      # bubble may extend this x the text box on each side
+    bubble_ring: 0.010   # outline thickness to take with it, x page height
 
   # --- stage 6: WD14 captions, then drop what teaches nothing -------------
   tag:

@@ -1,0 +1,19 @@
+# Magi v2 only. Its remote code breaks on transformers 5 (AutoBackbone), and an old
+# transformers breaks the main env's diffusers, so Magi gets its own venv:
+#   python -m venv .venv-magi
+#   .venv-magi\Scripts\pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#   .venv-magi\Scripts\pip install -r requirements-magi.txt
+# prepare_series.py finds .venv-magi on its own and runs the magi stage there.
+transformers==4.46.3
+huggingface_hub<1.0
+einops
+shapely
+pulp
+scipy
+matplotlib
+networkx
+tqdm
+pillow
+numpy<2
+opencv-python-headless
+pyyaml

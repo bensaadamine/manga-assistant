@@ -54,6 +54,45 @@ def erase_text(a: np.ndarray, texts, c) -> np.ndarray:
     mask = cv2.dilate(erase[lab].astype(np.uint8), np.ones((3, 3), np.uint8))
     out = a.copy()
     out[mask > 0] = 255
+    return erase_bubbles(out, texts, c) if c.get("erase_bubbles") else out
+
+
+def erase_bubbles(a: np.ndarray, texts, c) -> np.ndarray:
+    """Whiten the speech bubble each text box sits in, outline included.
+
+    Letters already gone, the bubble interior is the white region under the text
+    box. It counts as a bubble only if it stays close to the box (`bubble_grow`
+    of the box size on each side): text set on open paper or a background whose
+    outline is broken spreads far beyond it and is left alone. The region is then
+    grown by `bubble_ring` of the page height so the outline ring goes with it.
+    Empty bubbles left in v2 came back in B4 as ghost circles.
+    """
+    H, W = a.shape
+    white = (a >= c["ink"]).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(white, connectivity=4)
+    g, keep = c["bubble_grow"], np.zeros(n, bool)
+    for t in texts:
+        x0, y0, x1, y1 = (int(v) for v in t)
+        x0, y0, x1, y1 = max(0, x0), max(0, y0), min(W, x1), min(H, y1)
+        if x1 <= x0 or y1 <= y0:
+            continue
+        ids, cnt = np.unique(lab[y0:y1, x0:x1], return_counts=True)
+        cnt[ids == 0] = 0                               # 0 = ink
+        if cnt.max() == 0:
+            continue
+        k = ids[cnt.argmax()]
+        bw, bh = x1 - x0, y1 - y0
+        L, T = st[k, cv2.CC_STAT_LEFT], st[k, cv2.CC_STAT_TOP]
+        R, B = L + st[k, cv2.CC_STAT_WIDTH], T + st[k, cv2.CC_STAT_HEIGHT]
+        if (L >= x0 - g * bw and R <= x1 + g * bw and T >= y0 - g * bh and B <= y1 + g * bh
+                and L > 0 and T > 0 and R < W and B < H):
+            keep[k] = True
+    if not keep.any():
+        return a
+    r = max(3, int(c["bubble_ring"] * H)) | 1
+    mask = cv2.dilate(keep[lab].astype(np.uint8), np.ones((r, r), np.uint8))
+    out = a.copy()
+    out[mask > 0] = 255
     return out
 
 

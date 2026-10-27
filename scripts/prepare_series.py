@@ -77,14 +77,14 @@ def stage_tag(cfg, dirs, report):
     for path, found in tagger.tag_images(
             todo, model, tags, general_threshold=t["threshold"],
             character_threshold=t["character_threshold"],
-            progress=lambda d, n: print(f"  tag {d}/{n}", flush=True) if d % 200 < 8 else None):
+            progress=lambda d, n: print(f"  tag {d}/{n}", flush=True) if d % 100 == 0 or d == n else None):
         found = [x for x in found if x != cfg.series.trigger]
         path.with_suffix(".txt").write_text(", ".join([cfg.series.trigger] + found) + "\n",
                                             encoding="utf-8")
 
 
 def stage_filter(cfg, dirs, report):
-    """Move images whose caption carries a drop tag to <dir>/_dropped/. Idempotent."""
+    """Move images whose caption carries a drop tag to <dataset>_dropped/. Idempotent."""
     drop = set(cfg.dataset.tag["drop_tags"])
     out = {}
     for d in dirs:
@@ -93,7 +93,7 @@ def stage_filter(cfg, dirs, report):
             cap = p.with_suffix(".txt")
             tags = {x.strip() for x in cap.read_text(encoding="utf-8").split(",")}
             if tags & drop:
-                bin_ = d.parent / "_dropped" / d.name
+                bin_ = d.parent.parent / f"{d.parent.name}_dropped" / d.name   # outside train_data_dir
                 bin_.mkdir(parents=True, exist_ok=True)
                 shutil.move(str(p), bin_ / p.name)
                 shutil.move(str(cap), bin_ / cap.name)
@@ -183,11 +183,20 @@ def main() -> int:
         if not complete or "magi" in force:
             if "magi" in force:
                 mj.unlink(missing_ok=True)
-            try:
-                have = magi_mod.detect(pages, mj)
-            except (ImportError, OSError) as err:
-                raise SystemExit(f"magi: torch unavailable here ({type(err).__name__}). "
-                                 f"Run on Kaggle, or --skip-magi for panels only.")
+            venv = next((p for p in (ROOT / ".venv-magi/Scripts/python.exe",
+                                     ROOT / ".venv-magi/bin/python") if p.exists()), None)
+            if venv:                       # Magi needs transformers 4.x, the main env has 5
+                cmd = [str(venv), str(ROOT / "scripts/magi_detect.py"), "--config", a.config]
+                cmd += (["--src", a.src] if a.src else []) + (["--limit", str(a.limit)] if a.limit else [])
+                print("magi: running in .venv-magi")
+                subprocess.run(cmd, check=True)
+                have = json.loads(mj.read_text())
+            else:
+                try:
+                    have = magi_mod.detect(pages, mj)
+                except (ImportError, OSError, ValueError) as err:
+                    raise SystemExit(f"magi failed here ({type(err).__name__}: {err}).\n"
+                                     f"Create .venv-magi, see requirements-magi.txt.")
         report["magi"] = {"pages": len(have),
                           "character_boxes": sum(len(r["characters"]) for r in have.values())}
         report["timings_s"]["magi"] = round(tick() - t0)

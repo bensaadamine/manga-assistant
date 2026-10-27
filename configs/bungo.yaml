@@ -25,3 +25,23 @@ dataset:
 paths:
   pages: data/pages/bungo
   dataset: data/datasets/bungo
+
+# Dataset built 27 Oct (report: data/datasets/bungo_report.json):
+# 1084 panels x2 + 2529 crops x1 = 4697 images per epoch (Spy x Family: 1187).
+# Same recipe as LoRA v3, which was best at ~4750 steps. A 4x bigger dataset can
+# take more steps before it memorises, so 12000 (~2.5 epochs), a checkpoint every
+# 1200 steps = 10 candidates, picked with compare_loras.py like v3.
+lora:
+  rank: 32
+  alpha: 32
+  learning_rate: 1.0e-4
+  text_encoder_lr: 5.0e-5
+  lr_scheduler: cosine_with_restarts
+  warmup_steps: 100
+  max_train_steps: 12000
+  save_every_steps: 1200
+  batch_size: 1
+  resolution: 512
+  max_bucket_reso: 1024
+  optimizer: AdamW8bit
+  attention: sdpa

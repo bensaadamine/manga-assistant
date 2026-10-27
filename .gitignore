@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
 .venv/
+.venv-magi/
 venv/
 *.egg-info/
 .ipynb_checkpoints/

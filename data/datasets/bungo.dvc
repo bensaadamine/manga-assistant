@@ -1,0 +1,6 @@
+outs:
+- md5: 387e09ef32822110c3de27c2f110b240.dir
+  size: 484168486
+  nfiles: 7226
+  hash: md5
+  path: bungo

@@ -241,3 +241,14 @@ holed 258 faces), `crops_from_magi.py` (ported into `dataset/crops.py`), `build_
 to ~1400 panels from 2680 pages. Panels on this series carry visible English lettering and some
 under-splitting; the Magi crops are expected to be the cleaner half.
 
+### Bubble erase (26 Oct, `crops.erase_bubbles`)
+
+Letters were erased but empty bubble outlines stayed — the source of B4's ghost circles. Now the
+white region under each Magi text box is whitened with a ring for its outline, **only if** that
+region stays within 1x the text box on each side. Text set on open panel white (common in Bungo)
+spreads to the whole panel and is left alone.
+
+Bungo smoke test: 60 of 125 crops changed, closed bubbles gone. Left: bubbles that open onto the
+panel border, and bubbles whose text Magi missed. Sealing gaps by thickening ink first did not help
+(the leaks are open bubbles, not JPEG gaps). Off for dataset v2 (Spy × Family), on from Bungo.
+

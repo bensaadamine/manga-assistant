@@ -1,6 +1,6 @@
 torch>=2.1
 diffusers>=0.31
-transformers>=4.44
+transformers>=4.44         # Magi runs in .venv-magi (transformers 4.46.3), see requirements-magi.txt
 accelerate>=0.33
 safetensors>=0.4
 peft>=0.12
