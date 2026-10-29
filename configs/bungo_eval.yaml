@@ -1,0 +1,91 @@
+# Eval cases for the Bungo Stray Dogs style LoRA (artist #2).
+# Same layout and prompt override as spyxfamily_eval.yaml, so B3 vs B4 is
+# comparable across artists. Only the trigger, characters and poses change.
+# Descriptions are read off the references; edit them if a detail is wrong.
+extends: base.yaml
+
+paths:
+  refs: data/refs/bungo
+  outlines: data/outlines/bungo
+  results: outputs/bungo
+
+artist:
+  name: harukawa_sango
+  series: bungo
+  trigger_word: bsdstyle
+
+characters:
+  akiko:
+    reference: data/refs/bungo/akiko.png
+    description: >-
+      bsdstyle, 1girl, solo, short bob hair, white shirt, sleeves rolled up,
+      black necktie, high-waisted wide black trousers, fingerless gloves,
+      black shoes
+    negative_props: "bag, holding object, weapon, chair"
+
+  atsushi:
+    reference: data/refs/bungo/atsushi.png
+    description: >-
+      bsdstyle, 1boy, solo, short messy hair, white collared shirt,
+      black necktie, suspenders, black trousers, fingerless gloves,
+      black boots
+    negative_props: "bag, holding object, weapon"
+
+  doppo:
+    reference: data/refs/bungo/doppo.png
+    description: >-
+      bsdstyle, 1boy, solo, glasses, swept-back hair, white shirt,
+      black necktie, waistcoat, dark jacket, light trousers,
+      black dress shoes
+    negative_props: "bag, notebook, holding object, weapon"
+
+# Fallback for scripts that still read cfg.character (sweep.py, evaluate.py).
+# id picks the FID / ink-profile target: data/datasets/bungo_holdout.
+character:
+  id: bungo
+  reference: data/refs/bungo/atsushi.png
+  description: >-
+    bsdstyle, 1boy, solo, short messy hair, white collared shirt,
+    black necktie, suspenders, black trousers
+  negative_props: "bag, holding object, weapon"
+
+poses:
+  # ---------- AKIKO ----------
+  - file: akiko1.png
+    character: akiko
+  - file: akiko2.png
+    character: akiko
+    text: "seated, leaning back on one hand, one knee raised"
+  - file: akiko3.png
+    character: akiko
+
+  # ---------- ATSUSHI ----------
+  - file: atsushi1.png
+    character: atsushi
+  - file: atsushi2.png
+    character: atsushi
+    text: "seated, chin resting on one hand, cropped at the thighs"
+  - file: atsushi3.png
+    character: atsushi
+
+  # ---------- DOPPO ----------
+  - file: doppo1.png
+    character: doppo
+  - file: doppo2.png
+    character: doppo
+  - file: doppo3.png
+    character: doppo
+    text: "seated, one leg crossed, leaning on one hand"
+
+# ---------------------------------------------------------------------------
+# Prompt override copied from spyxfamily_eval.yaml (see there for why).
+prompts:
+  style: "(monochrome:1.3), (greyscale:1.3), (manga:1.4), (black and white:1.4), (screentone:1.2), clean lineart, ink drawing, high contrast"
+  background: "(white background:1.6), simple background, no shading behind the figure"
+  negative: >-
+    (color:1.5), (colored:1.5), colorful, vibrant colors, sepia, skin tone,
+    (grey background:1.6), (gradient background:1.4), grey backdrop, flat grey fill,
+    washed out, low contrast, lowres, bad anatomy, bad hands, extra digits,
+    worst quality, low quality, blurry, watermark, signature, text, 2girls,
+    speed lines, action lines, emphasis lines, halftone burst, dark background,
+    construction lines, seam lines, blindfold, bandage over eyes
