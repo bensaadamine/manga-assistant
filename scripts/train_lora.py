@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Thin CLI around manga.train_lora, so no PYTHONPATH is needed.
+"""Step 2 - trains the style LoRA: thin CLI around manga.train_lora (kohya sd-scripts), no PYTHONPATH needed.
 
     python scripts/train_lora.py --config spyxfamily.yaml --dry-run
     python scripts/train_lora.py --config spyxfamily.yaml --scripts ./sd-scripts

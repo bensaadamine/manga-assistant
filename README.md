@@ -48,40 +48,33 @@ git clone <your-repo-url> && cd manga-assistant
 pip install -e .
 ```
 
-On Colab, use `notebooks/00_colab_runner.ipynb` — it clones the repo, installs, and
-points the Hugging Face cache at Drive so an 8 GB download survives a disconnect.
+No local GPU: `notebooks/02_prepare_series_kaggle.ipynb` builds a dataset and
+`notebooks/01_train_lora_kaggle.ipynb` trains the LoRA, both on Kaggle.
 
-## Use
-
-```bash
-# generate every pose for a character
-python scripts/run_poses.py --config conan.yaml
-
-# the same, with photographed paper sketches as outlines
-python scripts/run_poses.py --config conan.yaml --photo-sketches
-
-# baselines for the report
-python scripts/run_poses.py --config conan.yaml --baseline b1            # pose only
-python scripts/run_poses.py --config conan.yaml --baseline b4 --lora <path>
-
-# ablation figures
-python scripts/sweep.py --config conan.yaml --param ip_scale --values 0.4 0.6 0.8
-```
-
-## Training a per-artist LoRA
+## Run it end to end (one series)
 
 ```bash
-# 1. Manga109 annotations -> single-character crops, speech bubbles filtered out
-python -m manga.preprocess --root data/Manga109 --book DetectiveConan \
-    --out data/datasets/conan --trigger aoymstyle
+# 1. dataset: pages -> panels -> Magi -> crops -> WD14 tags -> filter
+#    (Magi runs in its own venv, see requirements-magi.txt)
+python scripts/prepare_series.py --config bungo.yaml
 
-# 2. real tags instead of the placeholder captions
-bash scripts/tag_dataset.sh data/datasets/conan aoymstyle
+# 2. train the style LoRA (kohya sd-scripts)
+python scripts/train_lora.py --config bungo.yaml --scripts <path/to/sd-scripts>
 
-# 3. train  (kohya_ss sd-scripts, ~1-2 h on a free T4)
-git clone https://github.com/kohya-ss/sd-scripts
-python -m manga.train_lora --config conan.yaml --data data/datasets/conan
+# 3. pick a checkpoint: same poses, same seed, one column per LoRA
+python scripts/compare_loras.py --config bungo_eval.yaml --poses akiko2.png atsushi2.png \
+    --loras none models/loras/bungo/bungo_style-step00004800.safetensors
+
+# 4. measure B3 vs B4
+python scripts/evaluate.py --config bungo_eval.yaml --baseline b3
+python scripts/evaluate.py --config bungo_eval.yaml --baseline b4 --lora models/loras/bungo/bungo_style_v1.safetensors
+
+# 5. draw every pose in the config
+python scripts/run_poses.py --config bungo_eval.yaml --baseline b4 --lora models/loras/bungo/bungo_style_v1.safetensors
 ```
+
+Steps 1-2 run once per artist; step 5 is the everyday one. Optional research tools:
+`scripts/sweep.py` (one parameter) and `scripts/grid_sweep.py` (ip_scale x cn_scale).
 
 Plain LoRA, not QLoRA — QLoRA is a quantized-base trick for 7B+ language models, and
 SD 1.5's UNet is ~860M parameters, which fits a T4 directly.
@@ -147,8 +140,8 @@ and ink statistics that catch "looks like anime but is not actually inked."
 
 ```
 configs/      base.yaml + one per artist
-src/manga/    config, pipeline, prompts, sketches, generate, preprocess, train_lora, evaluate
+src/manga/    config, pipeline, prompts, sketches, generate, train_lora, evaluate, dataset/
 scripts/      runnable entry points for figures and datasets
-notebooks/    thin Colab runner - clone, install, call the modules
-tests/        config, prompt and sketch invariants
+notebooks/    Kaggle runners for dataset prep and training
+tests/        config, dataset and sketch invariants
 ```

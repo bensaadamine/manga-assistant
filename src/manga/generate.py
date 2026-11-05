@@ -1,4 +1,4 @@
-"""Generation.
+"""Runs diffusion: outline + reference + prompt -> images.
 
 GOTCHA: once IP-Adapter is loaded, the UNet demands an image on EVERY call, even a
 pure text-to-image one. Skip it and you get
@@ -31,31 +31,6 @@ def _embed(models: Models, prompt: str, negative: str, n: int):
     neg = models.compel(negative)
     pos, neg = models.compel.pad_conditioning_tensors_to_same_length([pos, neg])
     return pos.repeat(n, 1, 1), neg.repeat(n, 1, 1)
-
-
-def text_to_image(
-    models: Models,
-    cfg: Config,
-    prompt: str,
-    negative: str,
-    reference: Image.Image | None = None,
-    n: int = 1,
-    **overrides,
-) -> list[Image.Image]:
-    """No outline. Used to build reference sheets, and for the B0/B2 baselines."""
-    g = {**cfg.generation, **overrides}
-    pos, neg = _embed(models, prompt, negative, n)
-    images = models.pipe(
-        prompt_embeds=pos,
-        negative_prompt_embeds=neg,
-        num_inference_steps=g["steps"],
-        guidance_scale=g["cfg"],
-        width=g["width"],
-        height=g["height"],
-        generator=seeds(g["seed"], n, models.device),
-        **_ip_kwargs(models, reference, g["ip_scale"]),
-    ).images
-    return tag_seeds(images, g["seed"])
 
 
 def outline_to_image(

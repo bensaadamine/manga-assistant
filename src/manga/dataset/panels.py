@@ -1,4 +1,4 @@
-"""Panel extraction from manga pages: recursive X-Y gutter cut."""
+"""Cuts a page into panels by splitting recursively along white gutters and drawn borders."""
 import numpy as np
 import cv2
 

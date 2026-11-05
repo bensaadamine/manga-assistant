@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Magi stage on its own, so it can run in .venv-magi (see requirements-magi.txt).
+"""Runs only the Magi stage, inside .venv-magi (see requirements-magi.txt). Called by prepare_series.py.
 
     .venv-magi\\Scripts\\python scripts/magi_detect.py --config bungo.yaml
 

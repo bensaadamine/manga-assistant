@@ -1,4 +1,4 @@
-"""Stage 4: erase lettering from a kept panel, or refuse the panel.
+"""Erases the lettering from a kept panel (or rejects it), then resizes it for kohya.
 
 Whitening is only safe where the type sits on light ground — inside a bubble,
 or set on open white. Where it is laid straight over artwork, painting it out

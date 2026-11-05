@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-"""Volumes in, kohya-ready dataset out. One command per series.
+"""Step 1 - volumes in, kohya-ready dataset out: pages -> panels -> Magi -> crops -> WD14 tags -> tag filter.
 
     python scripts/prepare_series.py --config bungo.yaml                  # everything
     python scripts/prepare_series.py --config bungo.yaml --limit 40       # smoke test
     python scripts/prepare_series.py --config bungo.yaml --from crops     # redo from a stage
     python scripts/prepare_series.py --config bungo.yaml --src /kaggle/input/eng
+    python scripts/prepare_series.py --config bungo.yaml --sheets out/sheets  # contact sheets, then stop
 
 Stages, each skipped when its output already exists:
 
@@ -19,9 +20,9 @@ Stages, each skipped when its output already exists:
 Writes <dataset>_report.json: counts per stage, git commit and the resolved
 dataset config, so every dataset version says how it was made.
 
-Magi needs a GPU. On the laptop (Smart App Control blocks torch) the magi stage
-is skipped when magi.json is already present, and stops with a hint otherwise.
-Run the whole thing on Kaggle with notebooks/02_prepare_series_kaggle.ipynb.
+Magi needs a GPU and runs in .venv-magi (see requirements-magi.txt). The stage is
+skipped when magi.json is already complete. No local GPU: run the whole thing on
+Kaggle with notebooks/02_prepare_series_kaggle.ipynb.
 """
 from __future__ import annotations
 
@@ -114,6 +115,8 @@ def main() -> int:
     ap.add_argument("--until", choices=STAGES, help="stop after this stage")
     ap.add_argument("--skip-magi", action="store_true", help="panels only, no crops")
     ap.add_argument("--jobs", type=int, default=None)
+    ap.add_argument("--sheets", metavar="DIR",
+                    help="write contact sheets after the panel scan and stop")
     a = ap.parse_args()
 
     cfg = cfgmod.load(a.config)
@@ -157,6 +160,11 @@ def main() -> int:
         rows = ds.scan(cfg, pages, jobs=a.jobs)
         cache.write_text(json.dumps(rows))
     kept = ds.survivors(rows, dict(cfg.dataset.filters))
+    if a.sheets:
+        from manga.dataset.sheets import write_sheets
+        write_sheets(cfg, rows, pages, Path(a.sheets))
+        print(f"contact sheets -> {a.sheets}")
+        return 0
     rej = {}
     for r in rows:
         rej[r["reject"] or "kept_by_score"] = rej.get(r["reject"] or "kept_by_score", 0) + 1

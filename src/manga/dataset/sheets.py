@@ -1,4 +1,4 @@
-"""Contact sheets, so the filtering is eyeballed rather than trusted."""
+"""Contact sheets of kept and rejected panels, to check the filters by eye (prepare_series.py --sheets)."""
 import random
 from pathlib import Path
 

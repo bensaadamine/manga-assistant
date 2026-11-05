@@ -1,4 +1,4 @@
-"""Evaluation metrics.
+"""Metric functions for scripts/evaluate.py: DINOv2 identity, ink-profile style gap, FID, OpenPose distance.
 
 The headline figure for the report is B3 -> B4: ControlNet + IP-Adapter with and
 without the per-artist LoRA, on the same cases. Everything here exists to produce
@@ -161,14 +161,3 @@ def pose_distance(outline: Image.Image, generated: Image.Image) -> tuple[float, 
         return float("nan"), 0
     d = [float(np.hypot(a[i][0] - b[i][0], a[i][1] - b[i][1])) for i in shared]
     return float(np.mean(d)), len(shared)
-
-
-# ---------------------------------------------------------------- reporting
-
-
-def summarise(rows: list[dict]) -> dict[str, float]:
-    """Mean of every numeric column. Feed straight into a W&B summary."""
-    if not rows:
-        return {}
-    keys = [k for k, v in rows[0].items() if isinstance(v, (int, float))]
-    return {k: float(np.mean([r[k] for r in rows])) for k in keys}

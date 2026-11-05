@@ -1,4 +1,4 @@
-"""Same poses, same seed, several LoRAs side by side. One image per cell.
+"""Step 3 - same poses, same seed, several LoRA checkpoints side by side, to pick the best one.
 
     python scripts/compare_loras.py --config spyxfamily_eval.yaml \
         --poses yor_seated.png loid_running.png \

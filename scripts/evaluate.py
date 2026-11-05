@@ -1,12 +1,12 @@
-"""Measure one baseline on the eval cases and append a row to the metrics log.
+"""Step 4 - generates the eval cases for one baseline (B1/B3/B4), scores identity, style gap and FID, appends a row to the metrics log.
 
     python scripts/evaluate.py --config spyxfamily_eval.yaml --baseline b3
     python scripts/evaluate.py --config spyxfamily_eval.yaml --baseline b4 \
         --lora models/loras/spyxfamily/spyxfamily_style.safetensors
-    python scripts/evaluate.py --compare            # print the log, no generation
+    python scripts/evaluate.py --config bungo_eval.yaml --compare   # print the log, no generation
 
 Writes individual PNGs (run_poses.py only saves a grid, which cannot be measured)
-to outputs/eval/<run_id>/ and one row per run to outputs/metrics.csv.
+to <paths.results>/eval/<run_id>/ and one row per run to <paths.results>/metrics.csv.
 
 The style number is an ink profile compared against the ARTIST'S OWN held-out
 panels, so it is a distance to a real target rather than an arbitrary statistic.
@@ -30,7 +30,7 @@ from PIL import Image
 from manga import evaluate, generate, pipeline, prompts, sketches
 from manga.config import load
 
-METRICS = Path("outputs/metrics.csv")
+METRICS = Path("outputs/metrics.csv")   # replaced per series in main()
 FID_MIN = 50          # cleanfid is unreliable below roughly this many images per side
 
 FIELDS = [
@@ -78,6 +78,10 @@ def main() -> None:
     ap.add_argument("--compare", action="store_true", help="print the log and exit")
     args = ap.parse_args()
 
+    global METRICS
+    cfg = load(args.config)
+    METRICS = Path(cfg.paths.results) / "metrics.csv"
+
     if args.compare:
         print_log()
         return
@@ -85,11 +89,10 @@ def main() -> None:
     if args.baseline == "b4" and not args.lora:
         ap.error("--baseline b4 needs --lora PATH")
 
-    cfg = load(args.config)
     holdout = Path(args.holdout or f"{cfg.paths.datasets}/{cfg.character.id}_holdout")
 
     run_id = f"{args.baseline}_{datetime.now():%m%d_%H%M}"
-    out_dir = Path("outputs/eval") / run_id
+    out_dir = Path(cfg.paths.results) / "eval" / run_id
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"[{run_id}] target ink profile from {holdout}")

@@ -1,4 +1,4 @@
-"""WD14 tagging over onnxruntime, with no sd-scripts and no torch.
+"""Runs the WD14 tagger on onnxruntime to write captions: no sd-scripts, no torch.
 
 kohya's own tagger is the obvious tool, but importing it drags in
 `library.dataset` -> diffusers -> torch._dynamo -> optree, and on a machine with

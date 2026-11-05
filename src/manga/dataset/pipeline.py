@@ -1,6 +1,6 @@
-"""Pages -> panels -> filtered, de-lettered, kohya-ready training folder.
+"""Stages 0-2 of prepare_series.py: pages -> scored panels -> cleaned panels + holdout.
 
-Four stages, each resumable on its own:
+Three stages, each resumable on its own:
 
     extract_pages   PDF or folder  -> data/pages/<series>/<vol>/p-*.jpg
     scan            pages          -> panels.json  (every candidate, with scores)
@@ -196,8 +196,8 @@ def survivors(rows, f):
 def emit(cfg, rows, pages, root="."):
     """Write the de-lettered crops and placeholder captions kohya reads.
 
-    Captions are a trigger word plus the fixed style tags; scripts/tag_dataset.sh
-    replaces them with real WD14 tags, which needs a GPU and a model download.
+    Captions are a trigger word plus the fixed style tags; the `tag` stage of
+    scripts/prepare_series.py replaces them with real WD14 tags.
     """
     e, c = cfg.dataset.emit, cfg.dataset.clean
     out = Path(root) / cfg.paths.dataset

@@ -1,4 +1,4 @@
-"""magi.json -> one training image per character. CPU only.
+"""Turns magi.json into one cleaned training crop per character. CPU only.
 
 Ported unchanged from scripts/crops_from_magi.py, which built dataset v2. Checked
 26 Oct on magi_v3.json: 708 crops, a superset of the 647 that were trained on

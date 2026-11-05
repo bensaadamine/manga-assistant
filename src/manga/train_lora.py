@@ -1,4 +1,4 @@
-"""Per-artist style LoRA training.
+"""Turns the config's `lora:` block into a kohya sd-scripts command and runs it.
 
 Plain LoRA, not QLoRA: QLoRA is a quantized-base trick for 7B+ language models.
 SD 1.5's UNet is ~860M parameters and fits a free T4 at 512px with batch 1 and
@@ -106,7 +106,7 @@ def main() -> None:
     if not concepts:
         raise SystemExit(
             f"no '<repeats>_<trigger>' folder under {data} — "
-            f"run scripts/build_dataset.py --config {args.config} first")
+            f"run scripts/prepare_series.py --config {args.config} first")
     n = sum(1 for p in (data / concepts[0]).glob("*.png"))
     print(f"{name}: {n} images in {concepts[0]}, trigger '{trigger}'")
 

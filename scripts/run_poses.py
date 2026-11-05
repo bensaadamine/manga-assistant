@@ -1,8 +1,8 @@
-"""Generate every pose for one character and save a comparison grid.
+"""Step 5 - inference: draws every pose in a config from reference + outline (+ LoRA) and saves one grid.
 
-    python scripts/run_poses.py --config conan.yaml
-    python scripts/run_poses.py --config conan.yaml --lora models/loras/detective_conan/..safetensors
-    python scripts/run_poses.py --config conan.yaml --baseline b1   # pose only, no identity
+    python scripts/run_poses.py --config bungo_eval.yaml
+    python scripts/run_poses.py --config bungo_eval.yaml --lora models/loras/bungo/bungo_style_v1.safetensors
+    python scripts/run_poses.py --config bungo_eval.yaml --baseline b1   # pose only, no identity
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ BASELINES = {
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--config", default="conan.yaml")
+    ap.add_argument("--config", default="bungo_eval.yaml")
     ap.add_argument("--lora", default=None)
     ap.add_argument("--baseline", default="b3", choices=list(BASELINES))
     ap.add_argument("--n", type=int, default=2)

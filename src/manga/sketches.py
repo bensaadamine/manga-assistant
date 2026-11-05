@@ -1,4 +1,4 @@
-"""Turning drawings into ControlNet inputs, and cleaning reference images.
+"""Turns outlines (digital, or photos of paper) and references into ControlNet / IP-Adapter inputs.
 
 Polarity: ControlNet wants WHITE lines on a BLACK background. Paper sketches are
 black on white, so everything here normalises to the former.
@@ -94,13 +94,6 @@ def load_photo_sketch(
     clean = (keep[lbl] * 255).astype(np.uint8)[y0:y1, x0:x1]
     # already white-on-black, which is the polarity ControlNet wants
     return fit_to(Image.fromarray(clean), size, fill=0).convert("RGB")
-
-
-def outline_from_image(lineart_detector, image: Image.Image, size: tuple[int, int] = SIZE):
-    """Extract an anime-lineart outline from an existing finished drawing."""
-    return lineart_detector(
-        image.convert("RGB").resize(size), detect_resolution=512, image_resolution=768
-    ).resize(size)
 
 
 def whiten_background(image: Image.Image, threshold: int = 40, denoise: bool = False) -> Image.Image:

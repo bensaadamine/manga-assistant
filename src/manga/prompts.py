@@ -1,4 +1,4 @@
-"""Prompt assembly.
+"""Builds the positive and negative prompts from the config: style + quality + character + pose + background.
 
 Two rules learned the hard way during the POC:
 
@@ -25,14 +25,3 @@ def build(cfg: Config, pose: str, description: str, extra: str = "") -> str:
 def negative(cfg: Config, extra: str = "") -> str:
     neg = " ".join(cfg.prompts.negative.split())
     return f"{neg}, {extra}" if extra else neg
-
-
-def character_prompt(cfg: Config, pose: str) -> str:
-    """Prompt for the character defined in a per-artist config."""
-    return build(cfg, pose, cfg.character.description)
-
-
-def character_negative(cfg: Config) -> str:
-    """Negative prompt, with any props the reference carries but the outline does not."""
-    props = cfg.character.get("negative_props", "")
-    return negative(cfg, props)

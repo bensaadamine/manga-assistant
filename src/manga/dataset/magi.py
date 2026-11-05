@@ -1,4 +1,4 @@
-"""Pages -> magi.json: character and text boxes per page. Needs a GPU (Kaggle).
+"""Runs Magi v2 on every page -> magi.json with character and text boxes. Needs a GPU.
 
 Everything after this stage is CPU: crops.py re-cuts from the JSON in minutes,
 so the JSON is the expensive artefact and is written as it goes. A Kaggle

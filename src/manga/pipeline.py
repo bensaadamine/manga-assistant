@@ -1,4 +1,4 @@
-"""Model loading.
+"""Loads the frozen models once and attaches or rescales the style LoRA.
 
 Four pretrained components, nothing trained here:
   base checkpoint  - the ability to draw
@@ -17,7 +17,6 @@ from dataclasses import dataclass
 
 import torch
 from compel import Compel
-from controlnet_aux import LineartAnimeDetector
 from diffusers import (
     ControlNetModel,
     DPMSolverMultistepScheduler,
@@ -36,7 +35,6 @@ class Models:
     pipe: StableDiffusionPipeline
     cn_pipe: StableDiffusionControlNetPipeline
     compel: Compel
-    lineart: LineartAnimeDetector
     device: str = "cuda"
 
 
@@ -94,9 +92,7 @@ def load(cfg: Config, device: str = "cuda") -> Models:
     cn_pipe.image_encoder = pipe.image_encoder
     cn_pipe.feature_extractor = pipe.feature_extractor
 
-    lineart = LineartAnimeDetector.from_pretrained("lllyasviel/Annotators")
-
-    return Models(pipe=pipe, cn_pipe=cn_pipe, compel=compel, lineart=lineart, device=device)
+    return Models(pipe=pipe, cn_pipe=cn_pipe, compel=compel, device=device)
 
 
 def load_lora(models: Models, path: str, scale: float = 1.0) -> None:

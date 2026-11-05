@@ -1,4 +1,4 @@
-"""Small helpers shared across modules."""
+"""Small shared helpers: per-image seeds, image grid, save."""
 from __future__ import annotations
 
 from pathlib import Path

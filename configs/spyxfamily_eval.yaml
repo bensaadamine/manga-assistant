@@ -4,6 +4,11 @@
 # Descriptions live once per character; a pose only names which character it is.
 extends: base.yaml
 
+paths:
+  refs: data/refs/spyxfamily
+  outlines: data/outlines/spyxfamily
+  results: outputs/spyxfamily
+
 artist:
   name: tatsuya_endo
   series: spyxfamily
@@ -11,7 +16,7 @@ artist:
 
 characters:
   yor:
-    reference: data/refs/yor_ref3.png
+    reference: data/refs/spyxfamily/yor.png
     description: >-
       sxfstyle, 1girl, solo, very long straight black hair, wide headband,
       white long-sleeved blouse, buttoned vest, high-waisted pencil skirt,
@@ -19,14 +24,14 @@ characters:
     negative_props: "bag, handbag, holding object, weapon, chair"
 
   loid:
-    reference: data/refs/loid_ref4.png
+    reference: data/refs/spyxfamily/loid.png
     description: >-
       sxfstyle, 1boy, solo, short swept-back hair, three-piece suit,
       waistcoat, necktie, lapel pin, black dress shoes
     negative_props: "bag, briefcase, holding object, weapon"
 
   anya:
-    reference: data/refs/aina_ref4.png
+    reference: data/refs/spyxfamily/anya.png
     description: >-
       sxfstyle, 1girl, child, solo, short bob hair, horn-shaped hair ornaments,
       dark long-sleeved dress, white collar, white ribbon bow, white socks,
@@ -36,7 +41,7 @@ characters:
 # Fallback for scripts that still read cfg.character (sweep.py).
 character:
   id: spyxfamily
-  reference: data/refs/yor_ref3.png
+  reference: data/refs/spyxfamily/yor.png
   description: >-
     sxfstyle, 1girl, solo, very long straight black hair, wide headband,
     white long-sleeved blouse, buttoned vest, high-waisted pencil skirt
@@ -70,15 +75,15 @@ poses:
     text: "standing facing front, both arms raised and flexing biceps, full body"
 
   # ---------- ANYA ----------
-  - file: aina_pose1.png
+  - file: anya_pose1.png
     character: anya
     text: "standing facing front, feet together, arms at the sides, full body"
 
-  - file: aina_pose2.png
+  - file: anya_pose2.png
     character: anya
     text: "running toward the viewer, one leg lifted mid-stride, full body"
 
-  - file: aina_pose3.png
+  - file: anya_pose3.png
     character: anya
     text: "three-quarter front, both hands raised open at chest height, cowboy shot"
 

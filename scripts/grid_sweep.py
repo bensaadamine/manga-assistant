@@ -1,4 +1,4 @@
-"""IP x CN grid on one pose: rows = ip_scale, columns = cn_scale.
+"""Research (optional) - ip_scale x cn_scale grid on one pose: rows = ip_scale, columns = cn_scale.
 
     python scripts/grid_sweep.py --config spyxfamily_eval.yaml --pose 1 \
         --lora models/loras/spyxfamily/spyxfamily_style_v3.safetensors

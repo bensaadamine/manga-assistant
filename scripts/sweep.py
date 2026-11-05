@@ -1,8 +1,8 @@
-"""Parameter sweep for the ablation figures.
+"""Research (optional) - sweeps one parameter (cn_scale, ip_scale, cn_end or lora_scale) on one pose.
 
-    python scripts/sweep.py --config conan.yaml --param cn_scale --values 0.3 0.5 0.7 0.9
-    python scripts/sweep.py --config conan.yaml --param ip_scale --values 0.4 0.6 0.8
-    python scripts/sweep.py --config conan.yaml --param cn_end   --values 0.4 0.6 0.8 1.0
+    python scripts/sweep.py --config bungo_eval.yaml --param cn_scale --values 0.3 0.5 0.7 0.9
+    python scripts/sweep.py --config bungo_eval.yaml --param ip_scale --values 0.4 0.6 0.8
+    python scripts/sweep.py --config bungo_eval.yaml --param cn_end   --values 0.4 0.6 0.8 1.0
     python scripts/sweep.py --config spyxfamily_eval.yaml --param lora_scale \
         --values 0.4 0.6 0.8 1.0 --lora models/loras/spyxfamily/spyxfamily_style.safetensors
 
@@ -26,7 +26,7 @@ GEN_PARAMS = ["cn_scale", "ip_scale", "cn_end"]
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--config", default="conan.yaml")
+    ap.add_argument("--config", default="bungo_eval.yaml")
     ap.add_argument("--param", required=True, choices=GEN_PARAMS + ["lora_scale"])
     ap.add_argument("--values", type=float, nargs="+", required=True)
     ap.add_argument("--pose", type=int, default=1, help="index into cfg.poses")

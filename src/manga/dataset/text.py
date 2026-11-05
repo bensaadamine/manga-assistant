@@ -1,4 +1,4 @@
-"""Lettering detection on a manga panel.
+"""Finds lettering blocks and oversized SFX/logos in a panel.
 
 Bubbles turn out to be the wrong thing to look for: in these scans a large part
 of the dialogue is set straight onto white with no outline around it at all, and

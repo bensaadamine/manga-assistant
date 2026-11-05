@@ -1,4 +1,4 @@
-"""YAML config loading with single-level inheritance via an `extends:` key."""
+"""Loads YAML configs with one level of `extends:` inheritance, and gives attribute access (cfg.a.b)."""
 from __future__ import annotations
 
 from pathlib import Path
