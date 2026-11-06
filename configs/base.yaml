@@ -38,3 +38,8 @@ paths:
   results: outputs/results
   datasets: data/datasets
   loras: models/loras
+
+# Saved references and outlines in the app (data/library/). Past this many of each,
+# the least recently used one is deleted.
+library:
+  max_items: 50

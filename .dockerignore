@@ -1,0 +1,9 @@
+# Keep the build context small: data, weights and outputs are mounted at run time.
+data/
+models/
+outputs/
+.dvc/cache/
+.git/
+.venv*/
+notebooks/
+*.pt

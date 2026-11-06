@@ -1,0 +1,11 @@
+# What the tests need. No torch / diffusers: nothing under tests/ loads a model,
+# so CI stays a ~1 min CPU job instead of a 3 GB download.
+pytest>=8
+pyyaml>=6.0
+pillow>=10.0
+numpy>=1.26
+opencv-python-headless>=4.9
+fastapi>=0.110
+httpx>=0.27
+python-multipart>=0.0.9
+gradio>=5.0

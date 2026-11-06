@@ -94,10 +94,20 @@ def main() -> None:
     ap.add_argument("--scripts", type=Path, default=Path("./sd-scripts"))
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--wandb", action="store_true")
+    ap.add_argument("--steps", type=int, default=None,
+                    help="override lora.max_train_steps (the app sets it from the dataset size)")
+    ap.add_argument("--save-every", type=int, default=None,
+                    help="override lora.save_every_steps")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
     cfg = load(args.config)
+    # kohya writes the step count into every .safetensors' metadata (ss_max_train_steps),
+    # so an override stays traceable from the weights themselves.
+    if args.steps:
+        cfg["lora"]["max_train_steps"] = args.steps
+    if args.save_every:
+        cfg["lora"]["save_every_steps"] = args.save_every
     name, trigger = series_of(cfg)
     data = args.data or Path(cfg.paths.dataset)
     out = args.out or Path(cfg.paths.loras) / name

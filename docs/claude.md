@@ -187,9 +187,10 @@ Prompts are identical for B3 and B4 so only the LoRA differs.
 |---|---|---|
 | 1 | config + scripts + git | done |
 | 2 | DVC data + weights | done (local remote `C:/Users/bensa/dvcstore`; swap to Drive for teammates) |
-| 3 | Dockerfile | skeleton exists |
-| 4 | CI: tests on push | to do |
-| 5 | FastAPI serving, loads LoRA from registry | to do |
+| 3 | Dockerfile | done (5 Nov): serving image, CUDA 12.8, weights mounted |
+| 4 | CI: tests on push | done (5 Nov): GitHub Actions, CPU only, no model |
+| 5 | FastAPI serving, loads LoRA from registry | done (5 Nov): `scripts/serve.py`, registry = `configs/registry.yaml` |
+| + | Web UI (Gradio, `/ui`): volumes -> dataset -> train -> draw | done (5 Nov), see README "The app" |
 
 Versioning: **git** code · **DVC** data + LoRA weights · **W&B** runs and metrics.
 

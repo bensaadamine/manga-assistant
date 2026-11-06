@@ -1,7 +1,7 @@
 # V2 — B3 vs B4, measured
 
 What per-artist adaptation actually bought, on the eval cases. 10–11 October 2026.
-Gate from `DESIGN_SPACE.md` §5: *a style-gap number exists*. It does. It is negative.
+Gate from `DESIGN_SPACE.md` §3: *a style-gap number exists*. It does. It is negative.
 
 > **Superseded in part, 11 Oct.** The LoRA measured here is v1/v2, which kohya ran for
 > 0.55 / 0.25 of an epoch (see `claude.md` finding 18 and `TRAINING.md` update). LoRA v3
@@ -77,7 +77,7 @@ a style.
 | ≥ 1.73 | undertraining was not the cause → go to V3 (`counterfeit-flat`) |
 
 Independently of the outcome: **B3 itself sits at `white_ratio` 0.069 against 0.672.** The
-grey field is Counterfeit's, not the LoRA's — exactly the weakness `DESIGN_SPACE` §2.1
+grey field is Counterfeit's, not the LoRA's — exactly the weakness `DESIGN_SPACE` §1.1
 attributes to it. V3 is what attacks it, and there is now a number justifying V3.
 
 ## 4. The dataset rebuild — in flight

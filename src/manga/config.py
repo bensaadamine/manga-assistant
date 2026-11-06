@@ -7,6 +7,7 @@ from typing import Any
 import yaml
 
 CONFIG_DIR = Path(__file__).resolve().parents[2] / "configs"
+ROOT = CONFIG_DIR.parent
 
 
 def _deep_merge(base: dict, override: dict) -> dict:

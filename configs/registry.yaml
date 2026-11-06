@@ -1,0 +1,12 @@
+# Model registry: the LoRA served per series. Written by the app's
+# 'Promote' button; weights live in DVC, this file lives in git.
+bungo:
+  git: 7e118a7
+  lora: models/loras/bungo/bungo_style_v1.safetensors
+  promoted: '2026-10-29T00:00:00'
+  scale: 1.0
+spyxfamily:
+  git: 5b1f489
+  lora: models/loras/spyxfamily/spyxfamily_style_v3.safetensors
+  promoted: '2026-10-22T00:00:00'
+  scale: 1.0

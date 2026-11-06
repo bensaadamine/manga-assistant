@@ -79,6 +79,41 @@ Steps 1-2 run once per artist; step 5 is the everyday one. Optional research too
 Plain LoRA, not QLoRA — QLoRA is a quantized-base trick for 7B+ language models, and
 SD 1.5's UNet is ~860M parameters, which fits a T4 directly.
 
+## The app (same steps, no terminal)
+
+```bash
+pip install -e .
+python scripts/serve.py          # UI -> http://localhost:8000/ui   API -> http://localhost:8000/docs
+```
+
+| Tab | Does | Calls |
+|---|---|---|
+| 1 Volumes | drop PDFs / zips, name the series and trigger | writes `configs/<series>.yaml` |
+| 2 Dataset | build the dataset, live log | `scripts/prepare_series.py` |
+| 3 Train | train the LoRA (steps ~2.5 epochs), version with DVC | `scripts/train_lora.py`, `scripts/dvc_version.py` |
+| 4 Draw | reference + outline + checkpoint; compare all checkpoints; promote one | `manga.service` |
+
+- One job at a time (Magi and kohya each need the whole GPU); drawing models are freed while it runs.
+  Logs stay in `outputs/jobs/`.
+- References and outlines are kept in `data/library/` for reuse, 50 of each
+  (`library.max_items` in `base.yaml`), least recently used deleted first.
+- Every image is saved in `outputs/app/<date>/` with a `.json`: git commit, LoRA, seed, prompts, parameters.
+- **Promote** writes the chosen checkpoint to `configs/registry.yaml` (git). The API's
+  `POST /generate` with only `series=` serves that one.
+
+```bash
+curl -F series=bungo -F description="1boy, solo, white shirt, black trousers" \
+     -F reference=@atsushi.png -F outline=@pose.png http://localhost:8000/generate -o out.png
+```
+
+Docker (serving only; training and Magi stay outside):
+
+```bash
+docker build -t manga-assistant .
+docker run --gpus all -p 8000:8000 -v %cd%/models:/app/models -v %cd%/data:/app/data ^
+  -v %cd%/outputs:/app/outputs -v %USERPROFILE%/.cache/huggingface:/cache/hf manga-assistant
+```
+
 ## Configuration
 
 Everything lives in `configs/`. No magic numbers in code.
@@ -117,6 +152,9 @@ and ink statistics that catch "looks like anime but is not actually inked."
 | code | git |
 | datasets, LoRA weights | DVC, Google Drive remote |
 | runs, metrics, sample grids | Weights & Biases |
+| which LoRA is served per series | `configs/registry.yaml` (git) |
+| tests on every push | GitHub Actions (`.github/workflows/ci.yml`) |
+| serving environment | Docker (`Dockerfile`) |
 
 `data/` and `outputs/` are gitignored on purpose — they are DVC's.
 
