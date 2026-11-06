@@ -25,11 +25,16 @@ def main() -> None:
     ap.add_argument("--poses", nargs="+", required=True, help="outline file names from the config")
     ap.add_argument("--loras", nargs="+", required=True, help="paths, or 'none' for no LoRA")
     ap.add_argument("--scale", type=float, default=1.0)
+    ap.add_argument("--base-lora", default=None,
+                    help="shared flat-manga LoRA kept active under every column (DESIGN_SPACE V3)")
+    ap.add_argument("--base-lora-scale", type=float, default=0.5)
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
     cfg = load(args.config)
     models = pipeline.load(cfg)
+    if args.base_lora:
+        pipeline.load_lora(models, args.base_lora, args.base_lora_scale, name="base")
     poses = [p for p in cfg.poses if p["file"] in args.poses]
     missing = set(args.poses) - {p["file"] for p in poses}
     if missing:
@@ -56,7 +61,7 @@ def main() -> None:
                                             j["control"], j["reference"], n=1)[0]
             cols[i].append(img)
         if lora != "none":
-            models.pipe.unload_lora_weights()
+            pipeline.unload_lora(models)
 
     tiles = []
     for i, j in enumerate(jobs):

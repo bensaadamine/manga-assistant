@@ -13,7 +13,7 @@ Use pipe.vae.enable_slicing() instead.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import torch
 from compel import Compel
@@ -36,6 +36,7 @@ class Models:
     cn_pipe: StableDiffusionControlNetPipeline
     compel: Compel
     device: str = "cuda"
+    adapters: dict[str, float] = field(default_factory=dict)   # active LoRAs -> scale
 
 
 def load(cfg: Config, device: str = "cuda") -> Models:
@@ -95,28 +96,48 @@ def load(cfg: Config, device: str = "cuda") -> Models:
     return Models(pipe=pipe, cn_pipe=cn_pipe, compel=compel, device=device)
 
 
-def load_lora(models: Models, path: str, scale: float = 1.0) -> None:
-    """Attach a per-artist style LoRA to the shared UNet and text encoder.
+def _apply(models: Models) -> None:
+    """Activate every loaded LoRA at its own scale. set_adapters replaces the active set,
+    so it must always receive all of them - setting only 'style' would silently drop 'base'."""
+    if models.adapters:
+        models.pipe.set_adapters(list(models.adapters), adapter_weights=list(models.adapters.values()))
+
+
+def load_lora(models: Models, path: str, scale: float = 1.0, name: str = "style") -> None:
+    """Attach a LoRA to the shared UNet and text encoder.
+
+    name="style" is the per-artist LoRA. name="base" is a shared flat-manga LoRA
+    stacked underneath it (DESIGN_SPACE V3); both stay active together.
 
     cn_pipe shares unet and text_encoder with pipe, so injecting here reaches both.
     We do NOT fuse: an active PEFT adapter applies its scale inside the layer's
     forward pass, which survives being called through a different pipeline object.
     """
-    models.pipe.load_lora_weights(path, adapter_name="style")
-    models.pipe.set_adapters(["style"], adapter_weights=[scale])
+    models.pipe.load_lora_weights(path, adapter_name=name)
+    models.adapters[name] = scale
+    _apply(models)
 
-    n_unet = sum(1 for n, _ in models.pipe.unet.named_modules() if "lora_A" in n)
-    n_te = sum(1 for n, _ in models.pipe.text_encoder.named_modules() if "lora_A" in n)
+    n_unet = sum(1 for n, _ in models.pipe.unet.named_modules() if f"lora_A.{name}" in n)
+    n_te = sum(1 for n, _ in models.pipe.text_encoder.named_modules() if f"lora_A.{name}" in n)
     if n_unet == 0:
         raise RuntimeError(f"aucune couche LoRA injectee dans l'UNet depuis {path}")
-    print(f"LoRA ok : unet={n_unet} modules, text_encoder={n_te} modules, scale={scale}")
+    print(f"LoRA ok [{name}]: unet={n_unet} modules, text_encoder={n_te} modules, scale={scale}")
 
 
-def set_lora_scale(models: Models, scale: float) -> None:
-    """Change the active LoRA's strength without reloading it.
+def set_lora_scale(models: Models, scale: float, name: str = "style") -> None:
+    """Change one LoRA's strength without reloading it.
 
-    Only possible because load_lora leaves the adapter unfused: the scale lives in
+    Only possible because load_lora leaves adapters unfused: the scale lives in
     the PEFT layer and is read on every forward pass. A fused LoRA would need a
     full reload per value, which is what makes a lora_scale sweep cheap here.
     """
-    models.pipe.set_adapters(["style"], adapter_weights=[scale])
+    models.adapters[name] = scale
+    _apply(models)
+
+
+def unload_lora(models: Models, name: str = "style") -> None:
+    """Remove one LoRA, keep the others (unload_lora_weights() would drop them all)."""
+    if name in models.adapters:
+        models.pipe.delete_adapters(name)
+        del models.adapters[name]
+        _apply(models)

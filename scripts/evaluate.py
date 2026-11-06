@@ -5,6 +5,10 @@
         --lora models/loras/spyxfamily/spyxfamily_style.safetensors
     python scripts/evaluate.py --config bungo_eval.yaml --compare   # print the log, no generation
 
+    # V3: a shared flat-manga LoRA under everything, one row per weight, models loaded once
+    python scripts/evaluate.py --config spyxfamily_eval.yaml --baseline b3 \
+        --base-lora models/base_loras/manga_lineart.safetensors --base-lora-scale 0.3 0.5 0.8
+
 Writes individual PNGs (run_poses.py only saves a grid, which cannot be measured)
 to <paths.results>/eval/<run_id>/ and one row per run to <paths.results>/metrics.csv.
 
@@ -71,6 +75,10 @@ def main() -> None:
     ap.add_argument("--baseline", default="b3", choices=["b1", "b3", "b4"])
     ap.add_argument("--lora", default=None)
     ap.add_argument("--lora-scale", type=float, default=1.0)
+    ap.add_argument("--base-lora", default=None,
+                    help="shared flat-manga LoRA stacked under the style LoRA (DESIGN_SPACE V3)")
+    ap.add_argument("--base-lora-scale", type=float, nargs="+", default=[0.5],
+                    help="one run per value, e.g. 0.3 0.5 0.8")
     ap.add_argument("--n", type=int, default=2)
     ap.add_argument("--holdout", default=None, help="default: <paths.datasets>/<id>_holdout")
     ap.add_argument("--pose", action="store_true", help="also run OpenPose (slow, noisy)")
@@ -91,23 +99,37 @@ def main() -> None:
 
     holdout = Path(args.holdout or f"{cfg.paths.datasets}/{cfg.character.id}_holdout")
 
-    run_id = f"{args.baseline}_{datetime.now():%m%d_%H%M}"
-    out_dir = Path(cfg.paths.results) / "eval" / run_id
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    print(f"[{run_id}] target ink profile from {holdout}")
+    print(f"target ink profile from {holdout}")
     target = evaluate.ink_target(holdout)
     print("  " + "  ".join(f"{k}={v:.4f}" for k, v in target.items()))
 
     models = pipeline.load(cfg)
     if args.lora:
         pipeline.load_lora(models, args.lora, scale=args.lora_scale)
+    scorer = evaluate.IdentityScorer()
+
+    scales = args.base_lora_scale if args.base_lora else [None]
+    for bs in scales:
+        tag = args.baseline
+        if bs is not None:
+            if "base" in models.adapters:
+                pipeline.set_lora_scale(models, bs, name="base")
+            else:
+                pipeline.load_lora(models, args.base_lora, bs, name="base")
+            tag += f"_flat{bs:g}"
+        run_one(cfg, models, args, scorer, target, holdout, tag, bs)
+    print_log()
+
+
+def run_one(cfg, models, args, scorer, target, holdout, tag, base_scale) -> None:
+    run_id = f"{tag}_{datetime.now():%m%d_%H%M%S}"
+    out_dir = Path(cfg.paths.results) / "eval" / run_id
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"[{run_id}] generating")
     rows = generate_all(cfg, models, args, out_dir)
 
     print(f"[{run_id}] scoring")
-    scorer = evaluate.IdentityScorer()
     ident, gaps, inks, poses, kps = [], [], [], [], []
     per_case = []
     for r in rows:
@@ -130,6 +152,8 @@ def main() -> None:
     n_img = len(rows)
     n_held = len(list(holdout.rglob("*.png")))
     fid, note = "", args.note
+    if base_scale is not None:      # no new CSV column, so old metrics.csv files stay readable
+        note = f"base={Path(args.base_lora).name}@{base_scale:g} {note}".strip()
     if n_img >= FID_MIN and n_held >= FID_MIN:
         fid = evaluate.style_fid(out_dir, holdout)
     else:
@@ -170,7 +194,6 @@ def main() -> None:
     if note:
         print(f"  note           {note}")
     print(f"\nimages -> {out_dir}\nrow    -> {METRICS}")
-    print_log()
 
 
 def append(record: dict) -> None:

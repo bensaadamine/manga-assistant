@@ -31,7 +31,7 @@ the laptop. Kaggle is the fallback when 8 GB VRAM is not enough.
 
 # PHASE 1 — POC: DONE, VERDICT **GO**
 
-Full write-up in `claude/POC_VERDICT.md`. Related work and evaluation plan in `claude/RELATED_WORK.md`.
+Related work and evaluation plan in `claude/RELATED_WORK.md`.
 
 11 of 15 planned cases run, **all 11 passed first attempt**. Three characters, two kinds of
 reference, machine- and hand-drawn outlines. **Parameters tuned once on character 1
@@ -133,7 +133,7 @@ crops >10% text dropped), WD14 tags, then `no humans` / `close-up` / `eye focus`
 
 Pipeline (26 Oct): **one command** — `python scripts/prepare_series.py --config <series>.yaml`,
 on Kaggle via `notebooks/02_prepare_series_kaggle.ipynb` (Magi needs a GPU). Volumes in,
-`2_<trigger>/` panels + `1_<trigger>_crops/` + `_holdout/` + `_report.json` out. Full write-up, thresholds and known defects in **`claude/DATASET.md`**.
+`2_<trigger>/` panels + `1_<trigger>_crops/` + `_holdout/` + `_report.json` out. Filtering numbers in `V2_RESULTS.md` Appendix B.
 
 **Known data defect:** 45% of training panels still carry readable lettering. The WD14 tag
 `english text` is in those captions, so the model attributes text to that tag rather than to
@@ -148,7 +148,7 @@ on Kaggle via `notebooks/02_prepare_series_kaggle.ipynb` (Magi needs a GPU). Vol
 | **v3 `spyxfamily_style_v3`** | v2 data, repeats 2/1 | **alpha 32, epoch 4 of 10** | **white bg, flat ink, poses held** |
 
 Per-epoch checkpoints in `models/loras/spyxfamily/spyxfamily_style-0000NN.safetensors`.
-Config and flags in **`claude/TRAINING.md`**. Runner: `notebooks/01_train_lora_kaggle.ipynb`.
+Config in `configs/spyxfamily.yaml`; v1/v2/v3 story in `V2_RESULTS.md` Appendix A. Runner: `notebooks/01_train_lora_kaggle.ipynb`.
 
 ## Current state
 

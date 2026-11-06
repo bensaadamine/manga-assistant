@@ -1,6 +1,6 @@
 # Design space and versioning plan
 
-Companion to `POC_VERDICT.md` (what was proven) and `RELATED_WORK.md` (what exists elsewhere).
+Companion to `V2_RESULTS.md` (what was measured) and `RELATED_WORK.md` (what exists elsewhere).
 Compiled 8 October 2026. Rewritten 6 November 2026.
 
 Why each component was chosen, what replaces it if it fails, and the order of the next
@@ -14,7 +14,7 @@ experiments. Everything marked **[untested]** is a hypothesis, not a result.
 
 - **Chosen:** `gsdf/Counterfeit-V2.5`.
 - **Why:** clean separable lines, sound anatomy, not over-stylised. SD 1.5 is chosen for
-  **iteration speed on a 16 GB T4/P100**, and because the `lineart_anime` ControlNet exists
+  **iteration speed on an 8 GB laptop GPU (RTX 5060)**, and because the `lineart_anime` ControlNet exists
   officially only for SD 1.5. SDXL equivalents exist (IP-Adapter-Plus-SDXL is official;
   lineart ControlNets are community-made) but are several times slower to train and run on
   this hardware. Upgrading compute is out of scope.
@@ -34,13 +34,12 @@ experiments. Everything marked **[untested]** is a hypothesis, not a result.
 | Structure | ControlNet `lineart_anime`, CN_SCALE 0.50, CN_END 0.70 | canny, scribble, softedge. OpenPose rejected: the artist's own drawing is the control signal |
 | Identity | IP-Adapter Plus, IP_SCALE 0.80 | plain IP-Adapter (loses exact collar/silhouette), FaceID (head is out of scope), per-character LoRA (needs per-character training, defeats zero-shot) |
 | Prompt | `compel`, CLIP skip 2 | weights do nothing without compel; layer 12 gives softer, less obedient output |
-| Style | LoRA per artist, rank 32 / alpha 32 / lr 1e-4, epoch 4 (`TRAINING.md`) | DreamBooth too heavy, textual inversion too weak, QLoRA irrelevant (7B+ LLM trick) |
+| Style | LoRA per artist, rank 32 / alpha 32 / lr 1e-4, epoch 4 (`V2_RESULTS` App. A) | DreamBooth too heavy, textual inversion too weak, QLoRA irrelevant (7B+ LLM trick) |
 
 ### 1.3 Environment
 
-Kaggle (P100) for training; local RTX 5060 for side research. Smart App Control blocks
-`optree/_C.pyd`, which every sd-scripts entry point reaches via `library.dataset` → diffusers →
-`torch._dynamo`. RTX 50 is sm_120: cu128+ and `--sdpa`, never `--xformers`. Never
+Local first: RTX 5060 Laptop, 8 GB VRAM. Kaggle is the fallback when 8 GB is not enough.
+RTX 50 is sm_120: cu128+ and `--sdpa`, never `--xformers`. Never
 `pip install -r sd-scripts/requirements.txt`.
 
 ---
@@ -85,7 +84,7 @@ Each version changes **one** thing and produces **one** number.
 | **V0** done | POC: Counterfeit + ControlNet + IP-Adapter | Can identity and pose coexist without training? | 11/11, GO |
 | **V1** done | + LoRA #1 (Spy × Family) | Does data → kohya → `.safetensors` → pipeline work end to end? | trained 9 Oct |
 | **V2** done | B3 vs B4 on the eval cases | **What does per-artist adaptation buy?** | style_gap 1.149 < 1.25, passed (`V2_RESULTS` §7) |
-| **V4** done | Magi character crops; dataset rebuilt | Does removing lettering stop pseudo-text? | 647 crops, used by LoRA v3 (`DATASET.md`) |
+| **V4** done | Magi character crops; dataset rebuilt | Does removing lettering stop pseudo-text? | 647 crops, used by LoRA v3 (`V2_RESULTS` §4) |
 | **V3** next | Flat-manga LoRA merged (`counterfeit-flat`) | Does a flatter base help, or does the artist LoRA already do it? | §2 decision rule |
 | **V5** | Artists 2 and 3 (Vagabond last) | **Does the method transfer?** | three artists, one recipe |
 | **V6** | Head inpainting | Clean neck seam? | last step, by decision |

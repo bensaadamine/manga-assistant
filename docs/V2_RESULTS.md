@@ -4,7 +4,7 @@ What per-artist adaptation actually bought, on the eval cases. 10–11 October 2
 Gate from `DESIGN_SPACE.md` §3: *a style-gap number exists*. It does. It is negative.
 
 > **Superseded in part, 11 Oct.** The LoRA measured here is v1/v2, which kohya ran for
-> 0.55 / 0.25 of an epoch (see `claude.md` finding 18 and `TRAINING.md` update). LoRA v3
+> 0.55 / 0.25 of an epoch (see Appendix A). LoRA v3
 > (alpha 32, epoch 4) fixed it. §3's undertraining suspicion was right; the numbers in §1
 > are v1's, not the current system's.
 
@@ -121,7 +121,7 @@ clean crops. Below 300, add the third volume.
 > Shipped as `scripts/crops_from_magi.py` with rules 2 and 6 corrected: never fill a text
 > box with white (it punched holes through ~258 faces — erase only ink blobs fully inside
 > the box), and no square pad or centre crop (it cut heads and feet; kohya buckets handle
-> aspect). Result: 647 crops. See `DATASET.md`, update 11 Oct.
+> aspect). Result: 647 crops. Panel-filtering numbers for dataset v1: Appendix B.
 
 ## 5. Tooling added
 
@@ -172,3 +172,51 @@ quality: B4 is less wrong than B3, not right. The outputs still read as grey, so
 rather than Endo's flat ink on white paper (white 0.21 vs 0.67 says the same thing in numbers).
 The headline is "the LoRA moves the system in the right direction", **not** "the style is
 solved". Report both the table and the image grids side by side, so the claim is not overstated.
+
+---
+
+## Appendix A — why LoRA v1/v2 did nothing, and what v3 fixed
+
+**kohya counts steps in images × folder repeats, not images.** One epoch = sum of
+(images × the `N_` prefix) over all concept folders.
+
+| Run | Folders | Images / epoch | 1500 steps = |
+|---|---|---|---|
+| v1 | `10_` × 270 | 2700 | 0.55 epoch |
+| v2 | `10_` × 270 + `5_` × 647 | 5935 | 0.25 epoch |
+| **v3** | `2_` × 270 + `1_` × 647 | **1187** | 10 epochs saved |
+
+**Failed (v1, v2):** each image seen less than once. B4 grids were near pixel-identical to B3,
+and a `lora_scale` sweep 0.4 → 1.0 changed nothing.
+
+**Solved (v3):** alpha 32 (was 16), max_train_steps 6000, repeats 2/1 on
+`data/datasets/spyxfamily_v2`; everything else unchanged (`configs/spyxfamily.yaml`).
+`scripts/compare_loras.py` (same poses, same seed, one column per checkpoint): epoch 2 → 10
+style strengthens (white background, flat black fills, cleaner ink); from epoch 6 pose details
+fade. **Epoch 4 kept** → `models/loras/spyxfamily/spyxfamily_style_v3.safetensors`.
+
+## Appendix B — dataset v1 panel filtering, measured
+
+355 pages → 2864 panel candidates → **363 kept** → 347 after lettering removal
+→ 270 train + 77 holdout.
+
+| Rejected by | Count |
+|---|---|
+| smaller than 448 native | 1554 |
+| too much lettering (>0.30) | 434 |
+| oversized type: logos and drawn SFX (>0.02) | 247 |
+| sliver aspect | 124 |
+| blank or solid black | 23 |
+| lettering sat on artwork, unerasable | 16 |
+
+Threshold sensitivity, if more panels are needed:
+
+| min_side | text≤0.25 | text≤0.30 | text≤0.35 |
+|---|---|---|---|
+| 512 | 246 | 323 | 382 |
+| **448** | 284 | **367** | 433 |
+| 416 | 299 | 388 | 464 |
+| 384 | 323 | 414 | 495 |
+
+WD14 audit of the 270 training panels: 45% still tagged `english text` — the residual
+lettering that motivated the Magi crops (§4).

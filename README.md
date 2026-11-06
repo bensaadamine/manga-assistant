@@ -14,9 +14,8 @@ in the right place.
 
 ## Status
 
-The proof of concept is complete and **passed** — see `POC_VERDICT.md` in the project
-docs. 11 of 15 planned cases run, all 11 passed on the first attempt, against a bar of
-≥60% within three attempts. Parameters tuned once on character 1 transferred to
+The proof of concept is complete and **passed**: 11 of 15 planned cases
+run, all 11 passed on the first attempt, against a bar of ≥60% within three attempts. Parameters tuned once on character 1 transferred to
 characters 2 and 3 untouched.
 
 Phase 2 is per-artist LoRA training, which is what this repository is scaffolded for.

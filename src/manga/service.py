@@ -96,7 +96,7 @@ class ModelService:
         from . import pipeline
         if lora != self.lora:
             if self.lora is not None:
-                self.models.pipe.delete_adapters("style")
+                pipeline.unload_lora(self.models, "style")
                 self.lora = None
             if lora:
                 pipeline.load_lora(self.models, str(self.root / lora), scale)
